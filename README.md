@@ -12,9 +12,7 @@ Server side code as example PHP you have to finish yourself, but to get this to 
 		$data['css'] = ""
 		$data['js'] = ""
     
-3. Make it to a json array and sent it to the javascript function like this:
-
- echo '<script id="">Bigpipe.OnPageLoad(' . json_encode($data) . ')</script>';
+3. Make it to a json array and sent it to the javascript function
  
  
  That's it!
