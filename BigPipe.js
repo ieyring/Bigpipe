@@ -1,10 +1,10 @@
 window.BigPipe = (function(doc) {
-   function PageLet(p, domInserted) {
+ 	var PageLet = function(p, domInserted) {
         var data = p,
             remainingCss = 0,
             fragment, loadedcss = [],
 			prepareDom = function () {
-            fragment = document.getElementById(p.id);
+            fragment = doc.getElementById(p.id);
             console.log("Hide content for pagelet " + p.id);
             fragment.style.display = "none";
             loadCss()
@@ -43,7 +43,7 @@ window.BigPipe = (function(doc) {
                 return
             } //load js
             console.log("Loading JS for pagelet " + p.id);
-			var scripts = document.getElementsByTagName("script");
+			var scripts = doc.getElementsByTagName("script");
             for (var i = 0; i < data.js.length; i++) {
 				// If someone accidently add two of the same JS files to one paglet, we only load one...:
 				if(scripts[i].src == data.js) return;	
@@ -54,28 +54,38 @@ window.BigPipe = (function(doc) {
             prepareDom: prepareDom,
             loadJs: loadJs
         }
-    };
-	    var Loader = function () {
-        var d = document,
-            head = d.getElementsByTagName("head")[0],
+    },
+	 Loader = function () {
+        var head = doc.getElementsByTagName("head")[0],
+			removeJavascriptFromDom = function(url) {  // Remove inserted JS script from DOM	
+				 if (head && script.parentNode)  head.parentNode.removeChild(url); 
+			},
             loadJs = function (url, cb) {   // Inject JS in document...:
-                var script = d.createElement("script");
+                var script = doc.createElement("script");
 				script.async = true; // Required for FireFox 3.6 / Opera async loading.
                 script.type = "text/javascript";
                 var loaded = false,
-                    loadFunction = function () {
-                        if (loaded) { // If allready loaded, nothing to do...:	 
-                            script.onload = script.onreadystatechange = null; // Handle memory leak in IE
-                            return
-                        }
-                        console.log("loaded " + url);
-                        loaded = true;
+
+            	    loadFunction = function () {
+                        if (loaded) return; // If allready loaded, nothing to do...:	 
+					if (!loaded && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
+							script.onerror = script.onload = script.onreadystatechange = null;
+					    console.log("loaded " + url);
+                       	loaded = true;
                         cb && cb()
-                    };
+					 }
+                   };
+
                 script.onload = loadFunction;
-                script.onreadystatechange = loadFunction;
-                head.appendChild(script);
-                script.src = url;				
+	
+		      // Fall-back for older IE versions, they do not support the onload event on the script tag 
+	
+	            script.onreadystatechange = loadFunction;
+
+			// Because of a bug in IE8, the src needs to be set after the element has been added to the document.
+
+                head.appendChild(script)
+                script.src = url;
             },
 			cachedBrowser,
         	browser = function () {
@@ -87,9 +97,9 @@ window.BigPipe = (function(doc) {
             return cachedBrowser
         };
  var loadCss = function (url, fragment, cb) {
-		var _link = d.createElement("link");
-		_link.type = "text/css";
+		var _link = doc.createElement("link");
 		_link.rel = "stylesheet";
+		_link.type = "text/css";
 		_link.href = url;
 		"msie" == browser() ? _link.onreadystatechange = function () {
 			/loaded|complete/.test(_link.readyState) && cb();
@@ -101,7 +111,7 @@ window.BigPipe = (function(doc) {
 				setTimeout(arguments.callee, 20);
 				return
 			}
-			cb()
+			cb();
 		}();
 		head.appendChild(_link)
 	};
