@@ -88,11 +88,16 @@ window.BigPipe = (function(doc) {
                 script.src = url;
             },
 			cachedBrowser,
-        	browser = function () {
+        		browser = function () {
             if (!cachedBrowser) {
                 var ua = navigator.userAgent.toLowerCase(),
-				match = /(webkit)[ \/]([\w.]+)/.exec(ua) || /(opera)(?:.*version)?[ \/]([\w.]+)/.exec(ua) || /(msie) ([\w.]+)/.exec(ua) || !/compatible/.test(ua) && /(mozilla)(?:.*? rv:([\w.]+))?/.exec(ua) || [];
-                cachedBrowser = match[1]
+match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+		/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+		/(msie) ([\w.]+)/.exec( ua ) ||
+		ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+		[];
+               cachedBrowser = match[1];
             }
             return cachedBrowser
         };
