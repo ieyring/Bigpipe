@@ -43,7 +43,10 @@ window.BigPipe = (function(doc) {
                 return
             } //load js
             console.log("Loading JS for pagelet " + p.id);
+			var scripts = document.getElementsByTagName("script");
             for (var i = 0; i < data.js.length; i++) {
+				// If someone accidently add two of the same JS files to one paglet, we only load one...:
+				if(scripts[i].src == data.js) return;	
                 Loader.loadJs(data.js[i])
             }
         };
