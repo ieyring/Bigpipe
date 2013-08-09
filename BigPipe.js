@@ -37,23 +37,23 @@ window.BigPipe = (function(doc)
          return cachedBrowser;
      };
 
-     var loadCss = function (url, cb) {
-         var link = d.createElement("link");
-         link.type = "text/css";
-         link.rel = "stylesheet";
-         link.href = url;
+      var loadCss = function (url, cb) {
+         var ref = d.createElement("link");
+			ref.setAttribute('rel', 'stylesheet');
+			ref.setAttribute('type', 'text/css');
+			ref.setAttribute('href', url);
 
          if (browser() == "msie")
-             link.onreadystatechange = function () {
+             ref.onreadystatechange = function () {
                  /loaded|complete/.test(link.readyState) && cb();
              }
          else if (browser() == "opera")
-             link.onload = cb;
+             ref.onload = cb;
          else
          //FF, Safari, Chrome
              (function () {
                  try {
-                     link.sheet.cssRule;
+                     ref.sheet.cssRule;
                  } catch (e) {
                      setTimeout(arguments.callee, 20);
                      return;
@@ -61,7 +61,7 @@ window.BigPipe = (function(doc)
                  cb();
              })();
 
-         head.appendChild(link);
+         head.appendChild(ref);
      };
 
      return { loadCss: loadCss, loadJs: loadJs };
@@ -72,7 +72,7 @@ window.BigPipe = (function(doc)
 	 var data = p,
 		remainingCss = 0;
 
-	
+	  // Attaches a CSS resource to this Pagelet
 		 var loadCss = function () {
 		   //load css
          if (data.css && data.css.length) {
@@ -93,7 +93,7 @@ window.BigPipe = (function(doc)
          domInserted();
      }
 
-		 
+		  // Attaches a JS resource to this Pagelet.
 		  var loadJs = function () {
 			  
 			  
@@ -115,10 +115,14 @@ window.BigPipe = (function(doc)
 		    var d = document,
 	        pagelets = []; 		/* registered pagelets */
 
+			if (data.is_last != undefined && data.is_last) {
+				console.log("This pagelet was last:", data.id);
+			}
+
 		 var pagelet = new PageLet(data, function () {
 
-                 //load js
-//				 alert(pagelets.length);
+				// Load the js files for the pagelets..:
+
                  for (var i = 0, len = pagelets.length; i < len; i++)
                     pagelets[i].loadJs();
 
