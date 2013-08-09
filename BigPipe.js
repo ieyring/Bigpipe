@@ -35,7 +35,7 @@ window.BigPipe = (function(doc) {
         },
          insertDom = function () {
             console.log("Inserting content for pagelet " + p.id);
-            document.getElementById(p.id).innerHTML = p.content;
+            fragment.innerHTML = p.content;
             domInserted()
         },  // Attaches a JS resource to this Pagelet.
          loadJs = function () {
@@ -82,35 +82,25 @@ window.BigPipe = (function(doc) {
             }
             return cachedBrowser
         };
-        var loadCss = function (url, fragment, cb) {
-            var ref = d.createElement("link");
-            ref.setAttribute("rel", "stylesheet");
-            ref.setAttribute("type", "text/css");
-            ref.setAttribute("href", url);
-            if (browser() == "msie") {
-                ref.onreadystatechange = function () {
-                    fragment.style.display = "block";
-                    /loaded|complete/.test(link.readyState) && cb()
-                }
-            } else {
-                if (browser() == "opera") {
-                    ref.onload = cb;
-                    fragment.style.display = "block"
-                } else {  //FF, Safari, Chrome
-                    (function () {
-                        try {
-                            ref.sheet.cssRule;
-                            fragment.style.display = "block"
-                        } catch (e) {
-                            setTimeout(arguments.callee, 20);
-                            return
-                        }
-                        cb()
-                    })()
-                }
-            }
-            head.appendChild(ref)
-        };
+ var loadCss = function (url, fragment, cb) {
+		var _link = d.createElement("link");
+		_link.type = "text/css";
+		_link.rel = "stylesheet";
+		_link.href = url;
+		"msie" == browser() ? _link.onreadystatechange = function () {
+			/loaded|complete/.test(_link.readyState) && cb();
+			fragment.style.display = "block"
+		} : "opera" == browser() ? (_link.onload = cb, fragment.style.display = "block") : function () {
+			try {
+				_link.sheet.cssRule, fragment.style.display = "block";
+			} catch (e) {
+				setTimeout(arguments.callee, 20);
+				return
+			}
+			cb()
+		}();
+		head.appendChild(_link)
+	};
         return {
             loadCss: loadCss,
             loadJs: loadJs
