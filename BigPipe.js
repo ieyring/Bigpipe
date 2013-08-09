@@ -1,22 +1,37 @@
 window.BigPipe = (function(doc)
 {
-	// Main loader function	
-	 var Loader = function () {
+	 var 
+	 	  Loader = function () {
+
      var d = document,
-         head = d.getElementsByTagName("head")[0];
+         head = d.getElementsByTagName("head")[0],
 
-     var loadJs = function (url, cb) {
-         var script = d.createElement('script');
-         script.setAttribute('src', url);
-         script.setAttribute('type', 'text/javascript');
+		 // Inject JS in document...:
 
-         var loaded = false;
-         var loadFunction = function () {
-             if (loaded) return;
+		 loadJs = function (url, cb) {
+         
+		 var script = d.createElement('script');
+    	     script.setAttribute('src', url);
+	         script.setAttribute('type', 'text/javascript');
+
+         var loaded = false,
+		 	 loadFunction = function () {
+
+             if (loaded) { // If allready loaded, nothing to do...:	 
+					
+			// Handle memory leak in IE
+
+			script.onload = script.onreadystatechange = null;
+
+			return; 
+				 
+			}
              console.log("loaded " + url);
              loaded = true;
              cb && cb();
          };
+		 
+		 
          script.onload = loadFunction;
          script.onreadystatechange = loadFunction;
          head.appendChild(script);
@@ -37,7 +52,7 @@ window.BigPipe = (function(doc)
          return cachedBrowser;
      };
 
-      var loadCss = function (url, cb) {
+     var loadCss = function (url, fragment, cb) {
          var ref = d.createElement("link");
 			ref.setAttribute('rel', 'stylesheet');
 			ref.setAttribute('type', 'text/css');
@@ -45,22 +60,29 @@ window.BigPipe = (function(doc)
 
          if (browser() == "msie")
              ref.onreadystatechange = function () {
+				 
+				 fragment.style.display = "block";
+				 
                  /loaded|complete/.test(link.readyState) && cb();
              }
-         else if (browser() == "opera")
+         else if (browser() == "opera") {
+
              ref.onload = cb;
-         else
+			 				 fragment.style.display = "block";
+	 }
+         else {
          //FF, Safari, Chrome
              (function () {
                  try {
                      ref.sheet.cssRule;
+					 				 fragment.style.display = "block";
                  } catch (e) {
                      setTimeout(arguments.callee, 20);
                      return;
                  };
                  cb();
              })();
-
+	}
          head.appendChild(ref);
      };
 
@@ -70,18 +92,40 @@ window.BigPipe = (function(doc)
 	
 	 function PageLet(p, domInserted) {
 	 var data = p,
-		remainingCss = 0;
+		remainingCss = 0,
+		fragment,
+		loadedcss = [],
+		prepareDom = function() {
+			fragment = document.getElementById(p.id);
+            console.log("Hide content for pagelet " + p.id);
+			fragment.style.display = "none";
+			loadCss();
+		},
 
-	  // Attaches a CSS resource to this Pagelet
+		inArray = function(array, filename) {
+    
+		    for(var i = array.length;i--;) {
+		      if(array[i] == filename) return false;
+		    }
+	  
+	    return true;  
+	   }
+
+
 		 var loadCss = function () {
-		   //load css
+		   // Attaches a CSS resource to this Pagelet
          if (data.css && data.css.length) {
              console.log("Loading CSS for pagelet " + p.id);
              remainingCss = data.css.length;
              for (var i = remainingCss; i--; )
-                 Loader.loadCss(data.css[i], function () {
+			 
+			 if(inArray(loadedcss, data.css[i])){
+                 Loader.loadCss(data.css[i], fragment, function () {
                      ! --remainingCss && insertDom();
                  });
+		      loadedcss.push(data.css[i]); // flag css file as 'loaded'
+		    }
+			 
          }
          else
              insertDom();
@@ -89,11 +133,11 @@ window.BigPipe = (function(doc)
 		 
 		    var insertDom = function () {
          console.log("Inserting content for pagelet " + p.id);
-         document.getElementById(p.id).innerHTML = p.content;
+         doc.getElementById(p.id).innerHTML = p.content;
          domInserted();
      }
 
-		  // Attaches a JS resource to this Pagelet.
+		 // Attaches a JS resource to this Pagelet.
 		  var loadJs = function () {
 			  
 			  
@@ -106,29 +150,22 @@ window.BigPipe = (function(doc)
 			};
 		  
 
-		  return { loadCss: loadCss, loadJs: loadJs };
+		  return { prepareDom : prepareDom, loadJs: loadJs };
 	 }
-
 
 		var OnPageLoad = function(data) {
 			
-		    var d = document,
-	        pagelets = []; 		/* registered pagelets */
-
-			if (data.is_last != undefined && data.is_last) {
-				console.log("This pagelet was last:", data.id);
-			}
-
-		 var pagelet = new PageLet(data, function () {
+		    var pagelets = [], 		/* registered pagelets */
+				pagelet = new PageLet(data, function () {
 
 				// Load the js files for the pagelets..:
 
                  for (var i = 0, len = pagelets.length; i < len; i++)
                     pagelets[i].loadJs();
-
 	       });
-         pagelets.push(pagelet);
-         pagelet.loadCss();
+        
+		 pagelets.push(pagelet);
+		 pagelet.prepareDom(); // Hide all pagelets until css stylesheet is loaded.
 		}
 	
     return {       OnPageLoad: OnPageLoad      }
