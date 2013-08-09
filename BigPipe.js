@@ -60,8 +60,8 @@ window.BigPipe = (function(doc) {
             head = d.getElementsByTagName("head")[0],
             loadJs = function (url, cb) {   // Inject JS in document...:
                 var script = d.createElement("script");
-                script.setAttribute("src", url);
-                script.setAttribute("type", "text/javascript");
+				script.async = true; // Required for FireFox 3.6 / Opera async loading.
+                script.type = "text/javascript";
                 var loaded = false,
                     loadFunction = function () {
                         if (loaded) { // If allready loaded, nothing to do...:	 
@@ -74,7 +74,8 @@ window.BigPipe = (function(doc) {
                     };
                 script.onload = loadFunction;
                 script.onreadystatechange = loadFunction;
-                head.appendChild(script)
+                head.appendChild(script);
+                script.src = url;				
             },
 			cachedBrowser,
         	browser = function () {
