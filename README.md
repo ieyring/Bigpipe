@@ -1,27 +1,15 @@
 Bigpipe
 =======
 
-Javascript implementation of Facebooks bigpipe. Works right out of the box, but still a lot of work to do.
-Server side code as example PHP you have to finish yourself, but to get this to work, all you have to do is:
+Javascript implementation of Facebooks bigpipe. Works right out of the box. 
 
-1. Include Bigpipe.js
-2. Make a array like this:
+Finally I got time to finish up the 1.0 version.
 
-  	$data['content'] = ""
-		$data['id'] = ""
-		$data['css'] = ""
-		$data['js'] = ""
-    
-3. Make it to a json array and sent it to the javascript function
- 
- 
- That's it!
- 
- It is loading the content in this 3 steps:
- 
- 1. First loaing all css resources
- 2. The html files
- 3. JS 
+I tried to keep it as simple as small as possible, and I attached a example.php so you better
+can understand how to use it.
+
+Be aware that not all browsers have a console such as Firebug, so you may have to uncomment this lines
+before you use it.
 
 
 TODO:
