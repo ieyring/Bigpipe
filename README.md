@@ -1,5 +1,5 @@
-Bigpipe
-=======
+Bigpipe v.1.0
+==============
 
 Javascript implementation of Facebooks bigpipe. Works right out of the box. 
 
