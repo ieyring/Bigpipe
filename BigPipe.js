@@ -135,7 +135,7 @@ BigPipe = (function(doc) {
 
 			pagelets = [],
             pagelet = new PageLet(data, function () { // Load the js files for the pagelets..:
-                for (var i = 0, len = pagelets.length; i < len; i++) {
+                for (var i = pagelets.length; i--;) {
                     pagelets[i].loadJs()
                 }
             });
