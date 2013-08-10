@@ -1,5 +1,11 @@
 BigPipe = (function(doc) {
- 	var PageLet = function(p, domInserted) {
+
+			var 
+	
+	/* Pagelet definition */	
+
+
+ 	   PageLet = function(p, domInserted) {
         var data = p,
             remainingCss = 0,
             fragment, loadedcss = [],
@@ -18,7 +24,7 @@ BigPipe = (function(doc) {
             return true
         },
 		 loadCss = function () {  // Attaches a CSS resource to this Pagelet
-            if (data.css && data.css.length) {
+            if (data.css && 0 !== data.css.length) {
                 console.log("Loading CSS for pagelet " + p.id);
                 remainingCss = data.css.length;
                 for (var i = remainingCss; i--;) {
@@ -32,7 +38,7 @@ BigPipe = (function(doc) {
             } else {
                 insertDom()
             }
-        },
+        }, // Inject html
          insertDom = function () {
             console.log("Inserting content for pagelet " + p.id);
             fragment.innerHTML = p.content;
@@ -118,7 +124,12 @@ BigPipe = (function(doc) {
             loadJs: loadJs
         }
     }(), OnPageLoad = function (data) {
-        var pagelets = [],
+		
+        	var 
+
+			/*	Registered pagelets */
+
+			pagelets = [],
             pagelet = new PageLet(data, function () { // Load the js files for the pagelets..:
                 for (var i = 0, len = pagelets.length; i < len; i++) {
                     pagelets[i].loadJs()
@@ -127,6 +138,9 @@ BigPipe = (function(doc) {
         pagelets.push(pagelet); 
         pagelet.prepareDom(); // Hide all pagelets until css stylesheet is loaded.
     };
+	
+	console.log("Pagelet arrived " + data.id);		
+	
     return {
         OnPageLoad: OnPageLoad
     }
