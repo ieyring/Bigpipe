@@ -1,4 +1,4 @@
-window.BigPipe = (function(doc) {
+BigPipe = (function(doc) {
  	var PageLet = function(p, domInserted) {
         var data = p,
             remainingCss = 0,
@@ -39,12 +39,11 @@ window.BigPipe = (function(doc) {
             domInserted()
         },  // Attaches a JS resource to this Pagelet.
          loadJs = function () {
-            if (!data.js) {
-                return
-            } //load js
+            if (!data.js) return; // If no JS attached, return
+             //load js
             console.log("Loading JS for pagelet " + p.id);
 			var scripts = doc.getElementsByTagName("script");
-            for (var i = 0; i < data.js.length; i++) {
+            for (var i = 0, len = data.js.length; i < len; i++) {
 				// If someone accidently add two of the same JS files to one paglet, we only load one...:
 				if(scripts[i].src == data.js) return;	
                 Loader.loadJs(data.js[i])
@@ -62,10 +61,9 @@ window.BigPipe = (function(doc) {
 			},
             loadJs = function (url, cb) {   // Inject JS in document...:
                 var script = doc.createElement("script");
-				script.async = true; // Required for FireFox 3.6 / Opera async loading.
-                script.type = "text/javascript";
+					script.async = true; // Required for FireFox 3.6 / Opera async loading.
+	                script.type = "text/javascript";
                 var loaded = false,
-
             	    loadFunction = function () {
                         if (loaded) return; // If allready loaded, nothing to do...:	 
 					if (!loaded && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
@@ -90,18 +88,13 @@ window.BigPipe = (function(doc) {
 			cachedBrowser,
         		browser = function () {
             if (!cachedBrowser) {
-                var ua = navigator.userAgent.toLowerCase(),
-match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
-		/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
-		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
-		/(msie) ([\w.]+)/.exec( ua ) ||
-		ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
-		[];
-               cachedBrowser = match[1];
+                var ua = navigator.userAgent.toLowerCase(), match = /(chrome)[ \/]([\w.]+)/.exec( ua ) || /(webkit)[ \/]([\w.]+)/.exec( ua ) || /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+		/(msie) ([\w.]+)/.exec( ua ) || ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) || [];
+            cachedBrowser = match[1];
             }
             return cachedBrowser
-        };
- var loadCss = function (url, fragment, cb) {
+        },
+		loadCss = function (url, fragment, cb) {
 		var _link = doc.createElement("link");
 		_link.rel = "stylesheet";
 		_link.type = "text/css";
