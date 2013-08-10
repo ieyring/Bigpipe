@@ -5,7 +5,7 @@ Javascript implementation of Facebooks bigpipe. Works right out of the box.
 
 Finally I got time to finish up the 1.0 version.
 
-I tried to keep it as simple as small as possible, and I attached a example.php so you better
+I tried to keep it as simple and small as possible, and I attached a example.php so you better
 can understand how to use it.
 
 Be aware that not all browsers have a console such as Firebug, so you may have to uncomment this lines
