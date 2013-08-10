@@ -1,3 +1,7 @@
+/* Bigpipe - version 1.0
+   Kenny F. 2013
+*/
+
 BigPipe = (function(doc) {
 
 			var 
