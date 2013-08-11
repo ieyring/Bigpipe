@@ -15,7 +15,6 @@ BigPipe = function(doc) {
             for (var i = array.length; i--;) 
                 if (array[i] == filename) return -1;
 				return !0;
-            return true
         },
 		 loadCss = function () {  // Attaches a CSS resource to this Pagelet
             if (data.css && 0 !== data.css.length) {
