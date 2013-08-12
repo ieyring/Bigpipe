@@ -1,9 +1,7 @@
-Bigpipe v.1.0
+Bigpipe v.1.5
 ==============
 
 Javascript implementation of Facebooks bigpipe. Works right out of the box. 
-
-Finally I got time to finish up the 1.0 version.
 
 I tried to keep it as simple and small as possible, and I attached a example.php so you better
 can understand how to use it.
