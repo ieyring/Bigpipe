@@ -9,5 +9,5 @@ Main focus is to include this:
 2. Refreshing content in a single iframe pagelet on load
 3. Injection inline CSS and JS
 
-		
+But I have no time at the moment to fix this.	
 
