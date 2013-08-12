@@ -124,6 +124,20 @@ BigPipe = function(doc) {
  return {
  	
 	OnPageLoad: function (data) {
+	
+		if (window.removeEventListener) {
+			window.removeEventListener('DOMContentLoaded', BigPipe.OnPageLoad, false);
+			window.removeEventListener('load', BigPipe.OnPageLoad, false);
+		} else {
+			if (document.readyState != "complete")
+				return;
+			doc.detachEvent('onreadystatechange', BigPipe.OnPageLoad);
+			window.detachEvent('onload', BigPipe.OnPageLoad);
+		}
+		BigPipe.init(data);
+	},
+
+	init: function(data) {
 		
 		    var 
 
@@ -145,3 +159,11 @@ BigPipe = function(doc) {
     }
  }
 }(document);
+
+if (window.addEventListener) {
+	window.addEventListener('DOMContentLoaded', BigPipe.OnPageLoad, false);
+	window.addEventListener('load', BigPipe.OnPageLoad, false);
+} else {
+	document.attachEvent('onreadystatechange', BigPipe.OnPageLoad);
+	window.attachEvent('onload', BigPipe.OnPageLoad);
+}
