@@ -17,17 +17,10 @@ BigPipe = function(doc) {
         }
 		 function loadCss () {  // Attaches a CSS resource to this Pagelet
             if (data.css && 0 !== data.css.length) {
-
                 console.log("Loading CSS for pagelet " + data.id);
-                remainingCss = data.css.length;
-                for (var i = remainingCss; i--;) {
-                    if (inArray(loadedcss, data.css[i])) {
-                        Loader.loadCss(data.css[i], fragment, function () {
-                            !--remainingCss && insertDom()
-                        });
-                        loadedcss.push(data.css[i]) // flag css file as 'loaded'
-                    }
-                }
+			for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i]) && (Loader.loadCss(data.css[i], fragment, function () {
+                    !--remainingCss && insertDom()
+                }), loadedcss.push(data.css[i]))
             } else  insertDom()
         }
 		function inArray (array, filename) {
@@ -124,6 +117,20 @@ BigPipe = function(doc) {
  return {
  	
 	OnPageLoad: function (data) {
+	
+		if (window.removeEventListener) {
+			window.removeEventListener('DOMContentLoaded', BigPipe.OnPageLoad, false);
+			window.removeEventListener('load', BigPipe.OnPageLoad, false);
+		} else {
+			if (doc.readyState != "complete")
+				return;
+			doc.detachEvent('onreadystatechange', BigPipe.OnPageLoad);
+			window.detachEvent('onload', BigPipe.OnPageLoad);
+		}
+		BigPipe.init(data);
+	},
+
+	init: function(data) {
 		
 		    var 
 
@@ -145,3 +152,10 @@ BigPipe = function(doc) {
     }
  }
 }(document);
+if (window.addEventListener) {
+	window.addEventListener('DOMContentLoaded', BigPipe.OnPageLoad, false);
+	window.addEventListener('load', BigPipe.OnPageLoad, false);
+} else {
+	document.attachEvent('onreadystatechange', OnPageLoad);
+	window.attachEvent('onload', BigPipe.OnPageLoad);
+}
