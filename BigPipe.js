@@ -156,6 +156,6 @@ if (window.addEventListener) {
 	window.addEventListener('DOMContentLoaded', BigPipe.OnPageLoad, false);
 	window.addEventListener('load', BigPipe.OnPageLoad, false);
 } else {
-	document.attachEvent('onreadystatechange', OnPageLoad);
+	document.attachEvent('onreadystatechange', BigPipe.OnPageLoad);
 	window.attachEvent('onload', BigPipe.OnPageLoad);
 }
