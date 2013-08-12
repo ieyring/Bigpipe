@@ -62,7 +62,7 @@ BigPipe = function(doc) {
             loadJs: loadJs
         }
     },
-	 Loader = function () {
+	  Loader = function () {
         var head = doc.getElementsByTagName("head")[0],
 			removeJavascriptFromDom = function(url) {  // Remove inserted JS script from DOM	
 				 if (head && script.parentNode)  head.parentNode.removeChild(url); 
@@ -75,19 +75,28 @@ BigPipe = function(doc) {
 
             	    loadFunction = function () {
                         if (loaded) return; // If allready loaded, nothing to do...:	 
-					if (!loaded && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
-							script.onerror = script.onload = script.onreadystatechange = null;
-					    console.log("loaded " + url);
-                       	loaded = true;
-                        cb && cb()
-					 }
+						console.log("loaded " + url);
+						loaded = true;
+						cb && cb();
                    };
 
-                script.onload = loadFunction;
+               // Real browsers
+			    script.onload = loadFunction;
 	
 		      // Fall-back for older IE versions, they do not support the onload event on the script tag 
 	
-	            script.onreadystatechange = loadFunction;
+	           script.onreadystatechange = function() {
+					
+					if (!loaded && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
+						script.onerror = script.onload = script.onreadystatechange = null;
+					    console.log("loaded " + url);
+                       	loaded = true;
+						
+						// Handle memory leak in IE
+
+		                if (head && script.parentNode) head.removeChild(script);
+					 }					
+				};
 
 			// Because of a bug in IE8, the src needs to be set after the element has been added to the document.
 
