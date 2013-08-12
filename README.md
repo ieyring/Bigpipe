@@ -8,6 +8,8 @@ can understand how to use it.
 
 Be aware that not all browsers have a console such as Firebug, so you may have to uncomment this lines.
 
+Bigpipe v. 2.0 is under development - see the other branch. Cross-browswer DOM functionality added there
+
 
 TODO:
 
