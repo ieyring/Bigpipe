@@ -4,10 +4,10 @@
 
 BigPipe = function(doc) {
 
-	
 	/* Pagelet definition */	
 
 	function PageLet(data, domInserted) {
+	
 			 // Inject html
 	    function insertDom() {
             console.log("Injected content for pagelet " + data.id);
@@ -18,7 +18,7 @@ BigPipe = function(doc) {
 		 function loadCss () {  // Attaches a CSS resource to this Pagelet
             if (data.css && 0 !== data.css.length) {
                 console.log("Loading CSS for pagelet " + data.id);
-			for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i]) && (Loader.loadCss(data.css[i], fragment, function () {
+for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i]) && (Loader.loadCss(data.css[i], fragment, function () {
                     !--remainingCss && insertDom()
                 }), loadedcss.push(data.css[i]))
             } else  insertDom()
@@ -35,7 +35,7 @@ BigPipe = function(doc) {
 
 		  // Attaches a JS resource to this Pagelet.
   			prepareDom: function () {
-            fragment = doc.getElementById(data.id);
+			 fragment = doc.getElementById(data.id);
             console.log("Hide content for pagelet " + data.id);
             fragment.style.display = "none";
             loadCss()
@@ -117,20 +117,18 @@ BigPipe = function(doc) {
  return {
  	
 	OnPageLoad: function (data) {
-	
-		if (window.removeEventListener) {
-			window.removeEventListener('DOMContentLoaded', BigPipe.OnPageLoad, false);
-			window.removeEventListener('load', BigPipe.OnPageLoad, false);
-		} else {
-			if (doc.readyState != "complete")
-				return;
-			doc.detachEvent('onreadystatechange', BigPipe.OnPageLoad);
-			window.detachEvent('onload', BigPipe.OnPageLoad);
-		}
-		BigPipe.init(data);
+		
+		if (window.removeEventListener) window.removeEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.removeEventListener("load", BigPipe.OnPageLoad, !1);
+            else {
+                if ("complete" !=
+                    doc.readyState) return;
+                doc.detachEvent("onreadystatechange", BigPipe.OnPageLoad);
+                window.detachEvent("onload", BigPipe.OnPageLoad)
+            }
+            BigPipe.run(data);
 	},
 
-	init: function(data) {
+	run: function(data) {
 		
 		    var 
 
@@ -152,10 +150,5 @@ BigPipe = function(doc) {
     }
  }
 }(document);
-if (window.addEventListener) {
-	window.addEventListener('DOMContentLoaded', BigPipe.OnPageLoad, false);
-	window.addEventListener('load', BigPipe.OnPageLoad, false);
-} else {
-	document.attachEvent('onreadystatechange', BigPipe.OnPageLoad);
-	window.attachEvent('onload', BigPipe.OnPageLoad);
-}
+
+window.addEventListener ? (window.addEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.addEventListener("load", BigPipe.OnPageLoad, !1)) : (document.attachEvent("onreadystatechange", BigPipe.OnPageLoad), window.attachEvent("onload", BigPipe.OnPageLoad));

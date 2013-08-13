@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 Bigpipe v.1.5
 ==============
+=======
+Bigpipe v.2.0 - under construction
+=================================
+>>>>>>> origin/2.0-under-development
 
-Javascript implementation of Facebooks bigpipe. Works right out of the box. 
+Working on a better version with a improved performance.
 
+<<<<<<< HEAD
 I tried to keep it as simple and small as possible, and I attached a example.php so you better
 can understand how to use it.
 
@@ -21,4 +27,13 @@ TODO:
  
 
 		
+=======
+Main focus is to include this:
+
+1. Load each pagelet in a iframe so the code is isolated from the rest of the page
+2. Refreshing content in a single iframe pagelet on load
+3. Injection inline CSS and JS
+
+But I have no time at the moment to fix this.	
+>>>>>>> origin/2.0-under-development
 
