@@ -45,7 +45,7 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
              //load js
             console.log("Loading JS for pagelet " + data.id);
 			var scripts = doc.getElementsByTagName("script");
-            for (var i = 0, len = data.js.length; i < len; i++) {
+            for (var i = data.js.length; i--;) {
 				// If someone accidently add two of the same JS files to one paglet, we only load one...:
 				if(scripts[i].src == data.js) return;	
                 Loader.loadJs(data.js[i])
