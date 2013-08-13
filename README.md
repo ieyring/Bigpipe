@@ -3,7 +3,6 @@ Bigpipe v.1.5
 
 Working on a better version with a improved performance.
 
-<<<<<<< HEAD
 I tried to keep it as simple and small as possible, and I attached a example.php so you better
 can understand how to use it.
 
