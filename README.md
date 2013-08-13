@@ -1,4 +1,4 @@
-Bigpipe v.1.5
+Bigpipe v.1.6
 ==============
 
 Working on a better version with a improved performance.
