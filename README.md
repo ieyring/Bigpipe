@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 Bigpipe v.1.5
 ==============
-=======
-Bigpipe v.2.0 - under construction
-=================================
->>>>>>> origin/2.0-under-development
 
 Working on a better version with a improved performance.
 
@@ -25,15 +20,3 @@ TODO:
 4. Manage pagelets reources in a unique place. 
 
  
-
-		
-=======
-Main focus is to include this:
-
-1. Load each pagelet in a iframe so the code is isolated from the rest of the page
-2. Refreshing content in a single iframe pagelet on load
-3. Injection inline CSS and JS
-
-But I have no time at the moment to fix this.	
->>>>>>> origin/2.0-under-development
-
