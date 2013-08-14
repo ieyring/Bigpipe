@@ -1,21 +1,17 @@
-Bigpipe v.1.6
+Bigpipe v.2.0
 ==============
 
-Working on a better version with a improved performance.
+Fast, solid and lightweight implementation of Facebooks Bigpipe. It support all browsers - included older versions.
+Internet Explorer 6 & 7 included.
 
-I tried to keep it as simple and small as possible, and I attached a example.php so you better
-can understand how to use it.
+It works right out of the "box" and shouldn't give you any trouble.
 
-Be aware that not all browsers have a console such as Firebug, so you may have to uncomment this lines.
+Be aware that not all browsers have a console such as Firebug, so you may have to uncomment this lines in the script.
 
-Bigpipe v. 2.0 is under development - see the other branch. Cross-browswer DOM functionality added there
+Take a look in the example.php for how it works, and if you still not understand. Send me a email and I promise a 
+answer before 6 hours.
+
+I will for a time now not use any more time on this repo, but feel free to contribute if you have ideas for 
+inprovments.
 
 
-TODO:
-
-1. Fix it so scripts that are needed by the page but do not need to be loaded before executing pagelets can be delayed and be requested when the pagelets’ scripts are.
-2. Manage dependencies between scripts
-3.  Avoid double insertion. If two pagelets require the same script, it is only necessary to request once.
-4. Manage pagelets reources in a unique place. 
-
- 
