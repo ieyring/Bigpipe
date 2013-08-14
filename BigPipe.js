@@ -3,7 +3,6 @@
 */
 
 BigPipe = function(doc) {
-
 	/* Pagelet definition */	
 
 	function PageLet(data, domInserted) {
@@ -35,7 +34,8 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
 
 		  // Attaches a JS resource to this Pagelet.
   			prepareDom: function () {
-			 fragment = doc.getElementById(data.id);
+//				if( ! data.id) throw new Error("Something terrible happend."); return;
+            fragment = doc.getElementById(data.id);
             console.log("Hide content for pagelet " + data.id);
             fragment.style.display = "none";
             loadCss()
@@ -44,15 +44,14 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
             if (!data.js) return;
              //load js
             console.log("Loading JS for pagelet " + data.id);
-			var scripts = doc.getElementsByTagName("script");
-            for (var i = data.js.length; i--;) {
-				// If someone accidently add two of the same JS files to one paglet, we only load one...:
-				if(scripts[i].src == data.js) return;	
-                Loader.loadJs(data.js[i])
-            }
-        }
-    }
-  }
+            for (var scripts = doc.getElementsByTagName("script"), JSValidate = /js$/i, i = data.js.length; i--;) 
+				if( JSValidate.test( scripts[i].src ) ) { 			// Make sure this really is a javascript file
+					if(scripts[i].src == data.js) return;	 	// If someone accidently add two of the same JS files to one paglet, we only load one...:
+					Loader.loadJs(data.js[i])
+	            }
+        	}
+	    }
+	}
 	var Loader = function () {
 
 	function browser() {
@@ -60,7 +59,7 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
             if (!cachedBrowser) {
                 var ua = navigator.userAgent.toLowerCase(), match = /(chrome)[ \/]([\w.]+)/.exec( ua ) || /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
 		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||/(msie) ([\w.]+)/.exec( ua ) || ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||	[];
-               cachedBrowser = match[1]
+               cachedBrowser = match[1];
             }
 		
             return cachedBrowser
@@ -74,12 +73,20 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
                 script.type = "text/javascript";
                 var loaded = !1;
 
-               // Real browsers
+
+			// Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
+			// This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
+			
+			if("opera" == browser() && this.readyState && this.readyState != 'complete') { // Affected: Opera Opera 9.26, 10.00
+				return;
+			}
+
+              // Real browsers
 			    script.onload = function () {
 					 loaded || (console.log("loaded " + url), loaded = !0, cb && cb())
                 };
 	
-		      // Fall-back for older IE versions, they do not support the onload event on the script tag 
+		      // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag 
 	
 	           script.onreadystatechange = function() {
 				
@@ -129,6 +136,9 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
 	},
 
 	run: function(data) {
+		
+		// Allways add a css file, else the code will not run
+		if(! data.css) { console.log("Injection canceled. No CSS defined."); return -1; }
 		
 		    var 
 
