@@ -1,5 +1,5 @@
-/* Bigpipe - version 1.0
-   Kenny F. 2013
+/* Bigpipe - version 2.0
+   A KFlash production
 */
 
 BigPipe = function(doc) {
