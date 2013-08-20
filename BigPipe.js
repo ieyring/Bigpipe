@@ -37,7 +37,7 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
   			prepareDom: function () {
             fragment = doc.getElementById(data.id);
             console.log("Hide content for pagelet " + data.id);
-            fragment.style.display = "none";
+			fragment.className = "fragment_hidden"; // hack
             loadCss()
         },
 	     loadJs: function () {
