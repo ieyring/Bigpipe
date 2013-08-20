@@ -124,6 +124,13 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
  return {
  	
 	OnPageLoad: function (data) {
+		
+	// Hack to fix the console problem. Note! It works on IE9 and older versions, but still problems with IE9
+
+	if(!window.console) {
+		console={};
+		console.log = function(){};
+	}
 
 	// Allways add a css file, else the code will not run
     if(! data.css) { console.log("Injection canceled. No CSS defined."); return -1; }		
