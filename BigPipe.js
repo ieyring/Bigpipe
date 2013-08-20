@@ -106,11 +106,11 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
 		_link.href = url;
 		"msie" == browser() ? _link.onreadystatechange = function () {
 			/loaded|complete/.test(_link.readyState) && cb();
-			fragment.style.display = "block"
+			 fragment.className = "fragment_visible";
 		} : "opera" == browser() ? (_link.onload = cb, fragment.style.display = "block") : function () {
 			// NOTE! "opera" will only be detected by older browsers. Newer version of Opera use the same engine as Chrome
 			try {
-				_link.sheet.cssRule, fragment.style.display = "block";
+				_link.sheet.cssRule,  fragment.className = "fragment_visible";
 			} catch (e) {
 				setTimeout(arguments.callee, 20);
 				return
