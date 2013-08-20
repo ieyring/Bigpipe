@@ -128,18 +128,20 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
 	// Allways add a css file, else the code will not run
     if(! data.css) { console.log("Injection canceled. No CSS defined."); return -1; }		
 		
-		if (window.removeEventListener) window.removeEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.removeEventListener("load", BigPipe.OnPageLoad, !1);
-            else {
+		if (window.removeEventListener) {window.removeEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.removeEventListener("load", BigPipe.OnPageLoad, !1);
+		  } else {
                 if ("complete" !=
                     doc.readyState) return;
                 doc.detachEvent("onreadystatechange", BigPipe.OnPageLoad);
                 window.detachEvent("onload", BigPipe.OnPageLoad)
             }
-            BigPipe.run(data);
+
+            KFlash.run(data);
+
 	},
 
 	run: function(data) {
-		
+
 		    var 
 
 		/*	Registered pagelets */
@@ -147,10 +149,10 @@ for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i
 			pagelets = [],
 
             pagelet = new PageLet(data, function () { // Load the js files for the pagelets..:
-             for (var i = pagelets.length; i--;) {
+               for (var i = pagelets.length; i--;) {
                     pagelets[i].loadJs()
-                }
-            });
+                  }
+             });
 
 		console.log("Pagelet arrived " + data.id);			
 		
