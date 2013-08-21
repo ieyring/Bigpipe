@@ -3,8 +3,6 @@
 */
 BigPipe = function (doc) {
 
-    var _global = false;
-
     /* Pagelet definition */
 
 
