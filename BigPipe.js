@@ -1,23 +1,24 @@
-/* Bigpipe - version 1.0
+/* Bigpipe - version 2.1
    Kenny F. 2013
 */
-
 BigPipe = function (doc) {
 
     var _global = false;
 
     /* Pagelet definition */
 
-    function PageLet(data, domInserted) {
+
+    function PageLet(data, InjectJS) {
 
         // Inject html
         function insertDom() {
 
             console.log("Injected content for pagelet " + data.id);
             fragment.innerHTML = data.content;
+
             // Inject JS
 
-            domInserted();
+            InjectJS();
         }
 
         function loadCss() { // Attaches a CSS resource to this Pagelet
@@ -42,6 +43,7 @@ BigPipe = function (doc) {
             // Attaches a JS resource to this Pagelet.
             prepareDom: function () {
                 //alert(data.id);
+                if (!data.id) return;
                 fragment = doc.getElementById(data.id);
                 console.log("Hide content for pagelet " + data.id);
                 fragment.className = "fragment_hidden"; // hack
@@ -52,7 +54,7 @@ BigPipe = function (doc) {
                 //load js
                 console.log("Loading JS for pagelet " + data.id);
                 var scripts = doc.getElementsByTagName("script");
-                for (var i = data.js.length, JSValidate = /js$/i; i--;) {
+                for (var i = data.js.length; i--;) {
                     // If someone accidently add two of the same JS files to one paglet, we only load one...:
                     if (scripts[i].src == data.js) return;
                     Loader.loadJs(data.js[i])
@@ -132,9 +134,14 @@ BigPipe = function (doc) {
 
         OnPageLoad: function (data) {
 
+            if (window.removeEventListener) {
+                window.removeEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.removeEventListener("load", BigPipe.OnPageLoad, !1);
+            } else {
+                if ("complete" != doc.readyState) return;
+                doc.detachEvent("onreadystatechange", BigPipe.OnPageLoad);
+                window.detachEvent("onload", BigPipe.OnPageLoad)
+            }
             // Hack for IE9 and older IE versions, to avoid the console.log problem
-
-            if (_global === true) return
 
             if (!window.console) {
                 console = {};
@@ -143,20 +150,16 @@ BigPipe = function (doc) {
 
             // Allways add a css file, else the code will not run
 
-            //	if(typeof(data.css) !== 'undefined') { console.log("WARNING!! No CSS defined.");  }		
-
-            if (window.removeEventListener) {
-                window.removeEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.removeEventListener("load", BigPipe.OnPageLoad, !1);
-            } else {
-                if ("complete" != doc.readyState) return;
-                doc.detachEvent("onreadystatechange", BigPipe.OnPageLoad);
-                window.detachEvent("onload", BigPipe.OnPageLoad)
+            if (!data.css) {
+                console.log("WARNING!! No CSS defined.");
+                return;
             }
 
-            BigPipe.run(data);
-        },
+            // Make sure the paglet id is only letters
 
-        run: function (data) {
+            var regexLetter = /[a-zA-z]/;
+
+            if (!regexLetter.test(data.id)) alert('Sorry dude! This is not a valid paglet ID'), -1;
 
             var
 
