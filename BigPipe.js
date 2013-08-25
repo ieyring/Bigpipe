@@ -1,31 +1,21 @@
-/* Bigpipe - version 2.1
+/* Bigpipe - version 2.5
    Kenny F. 2013
 */
-BigPipe = function (doc) {
+var BigPipe = function (doc) {
+
+    // Javascript files to be injected
+
+    var js = [];
 
     /* Pagelet definition */
 
-
-    function PageLet(data, InjectJS) {
+    function PageLet(data, fragment) {
 
         // Inject html
         function insertDom() {
 
             console.log("Injected content for pagelet " + data.id);
             fragment.innerHTML = data.content;
-
-            // Inject JS
-
-            InjectJS();
-        }
-
-        function loadCss() { // Attaches a CSS resource to this Pagelet
-            if (data.css && 0 !== data.css.length) {
-                console.log("Loading CSS for pagelet " + data.id);
-                for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i]) && (Loader.loadCss(data.css[i], fragment, function () {
-                    !--remainingCss && insertDom()
-                }), loadedcss.push(data.css[i]))
-            } else insertDom()
         }
 
         function inArray(array, filename) {
@@ -34,29 +24,18 @@ BigPipe = function (doc) {
             return !0;
         }
         var remainingCss = 0,
-            fragment, loadedcss = [];
+            loadedcss = [];
 
         return {
+            loadCss: function () {
 
-            // Attaches a JS resource to this Pagelet.
-            prepareDom: function () {
-                //alert(data.id);
-                if (!data.id) return;
-                fragment = doc.getElementById(data.id);
-                console.log("Hide content for pagelet " + data.id);
-                fragment.className = "fragment_hidden"; // hack
-                loadCss()
-            },
-            loadJs: function () {
-                if (!data.js) return;
-                //load js
-                console.log("Loading JS for pagelet " + data.id);
-                var scripts = doc.getElementsByTagName("script");
-                for (var i = data.js.length; i--;) {
-                    // If someone accidently add two of the same JS files to one paglet, we only load one...:
-                    if (scripts[i].src == data.js) return;
-                    Loader.loadJs(data.js[i])
-                }
+                if (data.css && 0 !== data.css.length) {
+                    console.log("Loading CSS for pagelet " + data.id);
+                    for (var i = remainingCss = data.css.length; i--;) inArray(loadedcss, data.css[i]) && (Loader.loadCss(data.css[i], fragment, function () {
+                        !--remainingCss && insertDom()
+                    }), loadedcss.push(data.css[i]))
+                } else insertDom()
+
             }
         }
     }
@@ -78,9 +57,9 @@ BigPipe = function (doc) {
         return {
             loadJs: function (url, cb) { // Inject JS in document...:
                 var script = doc.createElement("script");
-                script.async = !0; // Required for FireFox 3.6 / Opera async loading.
+                script.async = !true // Required for FireFox 3.6 / Opera async loading.
                 script.type = "text/javascript";
-                var loaded = !1;
+                var loaded = false;
 
 
                 // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
@@ -113,11 +92,10 @@ BigPipe = function (doc) {
                 _link.href = url;
                 "msie" == browser() ? _link.onreadystatechange = function () {
                     /loaded|complete/.test(_link.readyState) && cb();
-                    fragment.className = "fragment_visible"; // hack
-                } : "opera" == browser() ? (_link.onload = cb, fragment.classname = "fragment_visible") : function () {
+                } : "opera" == browser() ? (_link.onload = cb) : function () {
                     // NOTE! "opera" will only be detected by older browsers. Newer version of Opera use the same engine as Chrome
                     try {
-                        _link.sheet.cssRule, fragment.classname = "fragment_visible";
+                        _link.sheet.cssRule;
                     } catch (e) {
                         setTimeout(arguments.callee, 20);
                         return
@@ -125,6 +103,10 @@ BigPipe = function (doc) {
                     cb();
                 }();
                 head.appendChild(_link)
+
+                // Make the paglet visible after CSS is injected
+
+                fragment.style.display = "block"
             }
         }
     }();
@@ -132,19 +114,11 @@ BigPipe = function (doc) {
 
         OnPageLoad: function (data) {
 
-            if (window.removeEventListener) {
-                window.removeEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.removeEventListener("load", BigPipe.OnPageLoad, !1);
-            } else {
-                if ("complete" != doc.readyState) return;
-                doc.detachEvent("onreadystatechange", BigPipe.OnPageLoad);
-                window.detachEvent("onload", BigPipe.OnPageLoad)
-            }
             // Hack for IE9 and older IE versions, to avoid the console.log problem
 
-            if (!window.console) {
-                console = {};
-                console.log = function () {};
-            }
+            window.console || (console = {
+                log: function () {}
+            });
 
             // Allways add a css file, else the code will not run
 
@@ -153,31 +127,103 @@ BigPipe = function (doc) {
                 return;
             }
 
-            // Make sure the paglet id is only letters
+            fragment = doc.getElementById(data.id);
 
-            var regexLetter = /[a-zA-z]/;
+            console.log("Hide content for pagelet " + data.id);
 
-            if (!regexLetter.test(data.id)) alert('Sorry dude! This is not a valid paglet ID'), -1;
+            // Hide all pagelets until css stylesheet is loaded.
 
-            var
+            fragment.style.display = "none";
+
+            // Async...:
+
+            if (data.js.length > 0) {
+
+
+                (function Loop(i) {
+
+                    setTimeout(function () {
+
+                        js.push(data.js[i - 1]);
+
+                        --i && Loop(i);
+
+                    }, 100);
+                })(data.js.length);
+
+            }
 
             /*	Registered pagelets */
 
-            pagelets = [],
+            var pagelet = new PageLet(data, fragment);
+            pagelet.loadCss();
 
-                pagelet = new PageLet(data, function () { // Load the js files for the pagelets..:
-                    for (var i = pagelets.length; i--;) {
-                        pagelets[i].loadJs()
-                    }
-                });
+            // Inject JS after all pagelets have been visible on the screen
+            // and the last paglet is completed
 
-            console.log("Pagelet arrived " + data.id);
+            if (data.is_last) {
 
-            pagelets.push(pagelet);
-            pagelet.prepareDom(); // Hide all pagelets until css stylesheet is loaded.
+                console.log("Injecting JS files");
+                var scripts = doc.getElementsByTagName("script");
+
+                // Async loading to handle large amount of contacts
+
+                (function Loop(i) {
+
+                    setTimeout(function () {
+
+                        // If someone accidently add two of the same JS files to one paglet, we only load one...:
+
+                        if (scripts[i - 1].src == data.js) return;
+                        Loader.loadJs(data.js[i - 1])
+
+                        --i && Loop(i);
+
+                    }, 100);
+                })(js.length);
+
+
+            }
 
         }
     }
 }(document);
 
-window.addEventListener ? (window.addEventListener("DOMContentLoaded", BigPipe.OnPageLoad, !1), window.addEventListener("load", BigPipe.OnPageLoad, !1)) : (document.attachEvent("onreadystatechange", BigPipe.OnPageLoad), window.attachEvent("onload", BigPipe.OnPageLoad));
+DomReady(window, BigPipe);
+
+function DomReady(h, n) {
+
+    var k = !1,
+        l = !0,
+        c = h.document,
+        r = c.documentElement,
+        f = c.addEventListener ? "addEventListener" : "attachEvent",
+        g = c.addEventListener ? "removeEventListener" : "detachEvent",
+        p = c.addEventListener ? "" : "on",
+        m = function (b) {
+            if ("readystatechange" != b.type || "complete" == c.readyState) {
+                ("load" == b.type ? h : c)[g](p + b.type, m, !1), !k && (k = !0) && n.call(h, b.type || b)
+            }
+        }, q = function () {
+            try {
+                r.doScroll("left")
+            } catch (b) {
+                setTimeout(q, 50);
+                return
+            }
+            m("poll")
+        };
+    if ("complete" == c.readyState) {
+        n.call(h, "lazy")
+    } else {
+        if (c.createEventObject && r.doScroll) {
+            try {
+                l = !h.frameElement
+            } catch (e) {}
+            l && q()
+        }
+        c[f](p + "DOMContentLoaded", m, !1);
+        c[f](p + "readystatechange", m, !1);
+        h[f](p + "load", m, !1)
+    }
+};
