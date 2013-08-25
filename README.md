@@ -1,4 +1,4 @@
-Bigpipe v.2.1a
+Bigpipe v.2.5
 ==============
 
 Fast, solid and lightweight implementation of Facebooks Bigpipe. It support all browsers - included older versions.
