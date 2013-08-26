@@ -1,9 +1,14 @@
-/* Bigpipe - version 2.55
+/* Bigpipe - version 2.56
    Kenny F. 2013
 */
 var BigPipe = function (d) {
 
-    /* Pagelet definition */
+    /**
+     * Configure the Pagelet.
+     *
+     * @param {data} contain all paglet data sent from server.
+     * @param {fragment} HTML injected div fragment
+     */
 
     function PageLet(data, fragment) {
 
@@ -40,7 +45,7 @@ var BigPipe = function (d) {
             }
         }
     }
-    var injected_js = [], // Keep track of javascript files that are allready injected into the document
+    var injected_js = [], // // Dependencies for the page that is allready injected into the page
         Loader = function () {
             function Browser() {
                 if (!e) {
@@ -122,64 +127,75 @@ var BigPipe = function (d) {
     return {
         OnPageLoad: function (data) {
 
-            // Hack for IE9 and older IE versions, to avoid the console.log problem
+            if (data) {
 
-            window.console || (console = {
-                log: function () {}
-            });
+                try {
 
-            // Allways add a css file, else we prevent the code from running
+                    // Hack for IE9 and older IE versions, to avoid the console.log problem
 
-            if (data.css) {
+                    window.console || (console = {
+                        log: function () {}
+                    });
 
-                if ("string" == typeof data.id && (fragment = d.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
+                    // Allways add a css file, else we prevent the code from running
 
-                    // Hide the paglet until css are injected
+                    if (data.css) {
 
-                    console.log("Hide content for pagelet " + data.id);
-                    fragment.style.display = "none";
+                        if ("string" == typeof data.id && (fragment = d.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
 
-                    // Collect the required javascript files
+                            // Hide the paglet until css are injected
 
-                    if (0 < data.js.length) {
+                            console.log("Hide content for pagelet " + data.id);
+                            fragment.style.display = "block";
 
-                        for (var f = data.js.length; f--;) {
+                            // Collect the required javascript files
 
-                            // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
-                            // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
-                            // into the document.
+                            if (0 < data.js.length) {
 
-                            var ijl = injected_js.length;
+                                for (var f = data.js.length; f--;) {
 
-                            if (0 < ijl) {
-                                for (var e = ijl; e--;) {
-                                    ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
+                                    // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
+                                    // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
+                                    // into the document.
+
+                                    var ijl = injected_js.length;
+
+                                    if (0 < ijl) {
+                                        for (var e = ijl; e--;) {
+                                            ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
+                                        }
+                                    } else {
+                                        injected_js.push(data.js[f]);
+                                    }
                                 }
-                            } else {
-                                injected_js.push(data.js[f]);
                             }
+
+                            (new PageLet(data, fragment)).loadCss();
+
+                            // Inject JS after all pagelets have been visible on the screen
+                            // and the last paglet is completed
+
+
+                            data.is_last && (d.getElementsByTagName("script"), function g(b) {
+                                setTimeout(function () {
+                                    console.log("Injecting JS file - " + data.js[b - 1]);
+                                    Loader.loadJs(data.js[b - 1]);
+                                    --b && g(b);
+                                }, 100)
+                            }(injected_js.length))
                         }
+                    } else {
+                        return;
                     }
+                } catch (e) {
 
-                    (new PageLet(data, fragment)).loadCss();
-
-                    // Inject JS after all pagelets have been visible on the screen
-                    // and the last paglet is completed
-
-
-                    data.is_last && (d.getElementsByTagName("script"), function g(b) {
-                        setTimeout(function () {
-                            console.log("Injecting JS file - " + data.js[b - 1]);
-                            Loader.loadJs(data.js[b - 1]);
-                            --b && g(b);
-                        }, 100)
-                    }(injected_js.length))
                 }
-            } else {
-                console.log("WARNING!! No CSS defined.");
             }
+
         }
+
     }
+
 }(document);
 DomReady(window, BigPipe);
 
@@ -193,7 +209,7 @@ function DomReady(d, l) {
         g = a.addEventListener ? "" : "on",
         b = function (c) {
             if ("readystatechange" != c.type || "complete" == a.readyState) {
-                ("load" == c.type ? d : a)[m](g + c.type, b, !1), !h && (h = !0) && l.calPageLet(d, c.type || c)
+                ("load" == c.type ? d : a)[m](g + c.type, b, !1), !h && (h = !0) && l.call(d, c.type || c)
             }
         }, c = function () {
             try {
@@ -205,7 +221,7 @@ function DomReady(d, l) {
             b("poll")
         };
     if ("complete" == a.readyState) {
-        l.calPageLet(d, "lazy")
+        l.call(d, "lazy")
     } else {
         if (a.createEventObject && f.doScroll) {
             try {
