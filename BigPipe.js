@@ -49,59 +49,73 @@ var BigPipe = function (d) {
                 }
                 return e;
             }
-            
-			var f = d.getElementsByTagName("head")[0] || d.getElementsByTagName("body")[0], e; // Just to be sure when it comes to old browsers
-			
+
+            var f = d.getElementsByTagName("head")[0] || d.getElementsByTagName("body")[0],
+                e; // Just to be sure when it comes to old browsers
+
             return {
 
                 // Insert Javascript files into the document
 
                 loadJs: function (url, cb) {
-                    var script = d.createElement("script"),
-                        loaded = !1;
-                    script.async = !1; // Required for FireFox 3.6 / Opera async loading.
-                    script.type = "text/javascript";
 
-                    // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
-                    // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
+                    // Prevent injection of other files then Javascript
 
-                    "opera" == Browser() && this.readyState && "complete" != this.readyState || (script.onload = function () {
-                            loaded || (console.log("loaded " + url), loaded = !0, cb && cb())
-                        }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
-                        script.onreadystatechange = function () {
-                            loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, f && script.parentNode && f.removeChild(script))
-                        },
-                        // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
+                    if ("string" == typeof url || "css" == url.split(".").pop()) url = url || "";
+                    if (url !== '') {
 
-                        f.appendChild(script), script.src = url);
+                        var script = d.createElement("script"),
+                            loaded = !1;
+                        script.async = !1; // Required for FireFox 3.6 / Opera async loading.
+                        script.type = "text/javascript";
+
+                        // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
+                        // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
+
+                        "opera" == Browser() && this.readyState && "complete" != this.readyState || (script.onload = function () {
+                                loaded || (console.log("loaded " + url), loaded = !0, cb && cb())
+                            }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
+                            script.onreadystatechange = function () {
+                                loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, f && script.parentNode && f.removeChild(script))
+                            },
+                            // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
+                            f.appendChild(script), script.src = url);
+                    }
                 },
 
                 // Inject CSS files into the document
 
                 loadCss: function (url, fragment, cb) {
-                    var _link = d.createElement("link");
-                    _link.rel = "stylesheet";
-                    _link.type = "text/css";
-                    _link.href = url;
-                    "msie" == Browser() ? _link.onreadystatechange = function () {
-                        /loaded|complete/.test(_link.readyState) && cb();
-                    } : "opera" == Browser() ? _link.onload = cb : function () {
 
-                        // NOTE! "opera" will only be detected by older browsers. Newer version of Opera use the same engine as Chrome
+                    // Prevent injection of other files then CSS
 
-                        try {
-                            _link.sheet.cssRule
-                        } catch (a) {
-                            setTimeout(arguments.callee, 20);
-                            return;
-                        }
-                        cb()
-                    }();
-                    f.appendChild(_link);
+                    if ("string" == typeof url || "css" == url.split(".").pop()) url = url || "";
+                    if (url !== '') {
 
-                    // Make the paglet visible after CSS is injected
+                        var _link = d.createElement("link");
+                        _link.rel = "stylesheet";
+                        _link.type = "text/css";
+                        _link.href = url;
+                        "msie" == Browser() ? _link.onreadystatechange = function () {
+                            /loaded|complete/.test(_link.readyState) && cb();
+                        } : "opera" == Browser() ? _link.onload = cb : function () {
 
-                    fragment.style.display = "block"
+                            // NOTE! "opera" will only be detected by older browsers. Newer version of Opera use the same engine as Chrome
+
+                            try {
+                                _link.sheet.cssRule
+                            } catch (a) {
+                                setTimeout(arguments.callee, 20);
+                                return;
+                            }
+                            cb()
+                        }();
+                        f.appendChild(_link);
+
+                        // Make the paglet visible after CSS is injected
+
+                        fragment.style.display = "block"
+                    }
                 }
             }
         }();
@@ -117,40 +131,50 @@ var BigPipe = function (d) {
             // Allways add a css file, else we prevent the code from running
 
             if (data.css) {
-                fragment = d.getElementById(data.id);
-                console.log("Hide content for pagelet " + data.id);
-                fragment.style.display = "none";
-                if (0 < data.js.length) {
-                    for (var f = data.js.length; f--;) {
 
-                        // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
-                        // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
-                        // into the document.
+                if ("string" == typeof data.id && (fragment = d.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
 
-                        var ijl = injected_js.length;
+                    // Hide the paglet until css are injected
 
-                        if (0 < ijl) {
-                            for (var e = ijl; e--;) {
-                                ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
+                    console.log("Hide content for pagelet " + data.id);
+                    fragment.style.display = "none";
+
+                    // Collect the required javascript files
+
+                    if (0 < data.js.length) {
+
+                        for (var f = data.js.length; f--;) {
+
+                            // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
+                            // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
+                            // into the document.
+
+                            var ijl = injected_js.length;
+
+                            if (0 < ijl) {
+                                for (var e = ijl; e--;) {
+                                    ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
+                                }
+                            } else {
+                                injected_js.push(data.js[f]);
                             }
-                        } else {
-                            injected_js.push(data.js[f]);
                         }
                     }
+
+                    (new PageLet(data, fragment)).loadCss();
+
+                    // Inject JS after all pagelets have been visible on the screen
+                    // and the last paglet is completed
+
+
+                    data.is_last && (d.getElementsByTagName("script"), function g(b) {
+                        setTimeout(function () {
+                            console.log("Injecting JS file - " + data.js[b - 1]);
+                            Loader.loadJs(data.js[b - 1]);
+                            --b && g(b);
+                        }, 100)
+                    }(injected_js.length))
                 }
-                (new PageLet(data, fragment)).loadCss();
-
-                // Inject JS after all pagelets have been visible on the screen
-                // and the last paglet is completed
-
-
-                data.is_last && (d.getElementsByTagName("script"), function g(b) {
-                    setTimeout(function () {
-                        console.log("Injecting JS file - " + data.js[b - 1]);
-                        Loader.loadJs(data.js[b - 1]);
-                        --b && g(b);
-                    }, 100)
-                }(injected_js.length))
             } else {
                 console.log("WARNING!! No CSS defined.");
             }
