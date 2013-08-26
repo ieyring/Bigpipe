@@ -1,4 +1,4 @@
-/* Bigpipe - version 2.6
+/* Bigpipe - version 2.62
    Kenny F. 2013
 */
 var BigPipe = function (d) {
@@ -12,12 +12,13 @@ var BigPipe = function (d) {
 
     function PageLet(data, fragment) {
 
-        // Inject html
+        // Inject html, and make the paglet visible
 
         function insertDOM() {
             console.log("Injected content for pagelet " + data.id);
-            fragment.innerHTML = data.content;
-        }
+            fragment.innerHTML = "string" == typeof data.content ? data.content : "Something went wrong!";
+            fragment.style.display = "block"; // Make the paglet visible
+        };
 
         function inArray(a, b) {
             a = a || [];
@@ -34,11 +35,22 @@ var BigPipe = function (d) {
             loadCss: function () {
                 if (data.css && 0 !== data.css.length) {
                     console.log("Loading CSS for pagelet " + data.id);
-                    for (var c = remainingCss = data.css.length; c--;) {
-                        inArray(loadedcss, data.css[c]) && (Loader.loadCss(data.css[c], fragment, function () {
-                            !--remainingCss && insertDOM()
-                        }), loadedcss.push(data.css[c]))
-                    }
+                    var dcl = remainingCss = data.css.length;
+                    (function Loop(i) {
+                        setTimeout(function () {
+                            inArray(loadedcss, data.css[i - 1]) && (Loader.loadCss(data.css[i - 1], fragment, function () {
+                                !--remainingCss;
+                            }), loadedcss.push(data.css[i - 1]))
+
+                            // If many CSS files in one paglet, we only make the paglet visible after the last CSS file is
+                            // injected						
+
+                            i == dcl && insertDOM();
+
+                            --i && Loop(i);
+
+                        }, 10);
+                    })(dcl);
                 } else {
                     insertDOM();
                 }
@@ -65,7 +77,6 @@ var BigPipe = function (d) {
                 loadJs: function (url, cb) {
 
                     // Prevent injection of other files then Javascript
-                    // Partly inspired by how Google does this
 
                     if ("string" == typeof url || "css" == url.split(".").pop()) {
                         url = url || "";
@@ -107,6 +118,7 @@ var BigPipe = function (d) {
                         _link.rel = "stylesheet";
                         _link.type = "text/css";
                         _link.href = url;
+
                         "msie" == Browser() ? _link.onreadystatechange = function () {
                             /loaded|complete/.test(_link.readyState) && cb();
                         } : "opera" == Browser() ? _link.onload = cb : function () {
@@ -117,15 +129,12 @@ var BigPipe = function (d) {
                                 _link.sheet.cssRule
                             } catch (a) {
                                 setTimeout(arguments.callee, 20);
+
                                 return;
                             }
                             cb()
                         }();
                         f.appendChild(_link);
-
-                        // Make the paglet visible after CSS is injected
-
-                        fragment.style.display = "block"
                     }
                 }
             }
