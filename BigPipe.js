@@ -1,4 +1,4 @@
-/* Bigpipe - version 2.56
+/* Bigpipe - version 2.6
    Kenny F. 2013
 */
 var BigPipe = function (d) {
@@ -46,7 +46,7 @@ var BigPipe = function (d) {
         }
     }
     var injected_js = [], // // Dependencies for the page that is allready injected into the page
-     Loader = function () {
+        Loader = function () {
             function Browser() {
                 if (!e) {
                     var a = navigator.userAgent.toLowerCase();
@@ -65,14 +65,16 @@ var BigPipe = function (d) {
                 loadJs: function (url, cb) {
 
                     // Prevent injection of other files then Javascript
-					// Partly inspired by how Google does this
+                    // Partly inspired by how Google does this
 
-                    if ("string" == typeof url || "css" == url.split(".").pop()) url = url || "";
-                    if (url !== '') {
+                    if ("string" == typeof url || "css" == url.split(".").pop()) {
+                        url = url || "";
+                    }
+                    if ("" !== url) {
 
                         var script = d.createElement("script"),
-                           firstScript = document.scripts[0];
-						    loaded = false;
+                            firstScript = document.scripts[0];
+                        loaded = false;
                         script.async = true; // Required for FireFox 3.6 / Opera async loading.
                         script.type = "text/javascript";
 
@@ -86,7 +88,7 @@ var BigPipe = function (d) {
                                 loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, f && script.parentNode && f.removeChild(script))
                             },
                             // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
-							  firstScript.parentNode.insertBefore(script, firstScript) , script.src = url);
+                            firstScript.parentNode.insertBefore(script, firstScript), script.src = url);
                     }
                 },
 
@@ -96,8 +98,10 @@ var BigPipe = function (d) {
 
                     // Prevent injection of other files then CSS
 
-                    if ("string" == typeof url || "css" == url.split(".").pop()) url = url || "";
-                    if (url !== '') {
+                    if ("string" == typeof url || "css" == url.split(".").pop()) {
+                        url = url || "";
+                    }
+                    if ("" !== url) {
 
                         var _link = d.createElement("link");
                         _link.rel = "stylesheet";
@@ -148,7 +152,7 @@ var BigPipe = function (d) {
                             // Hide the paglet until css are injected
 
                             console.log("Hide content for pagelet " + data.id);
-                            fragment.style.display = "block";
+                            fragment.style.display = "none";
 
                             // Collect the required javascript files
 
@@ -176,21 +180,21 @@ var BigPipe = function (d) {
 
                             // Inject JS after all pagelets have been visible on the screen
                             // and the last paglet is completed
+                            // Async loading. The Javascript files will be injected one by one
 
-
-                            data.is_last && (d.getElementsByTagName("script"), function g(b) {
+                            data.is_last && (function g(b) {
                                 setTimeout(function () {
                                     console.log("Injecting JS file - " + data.js[b - 1]);
                                     Loader.loadJs(data.js[b - 1]);
                                     --b && g(b);
-                                }, 100)
+                                }, 10)
                             }(injected_js.length))
                         }
                     } else {
-                        window.location.href=data.error;
+                        window.location.href = data.onError;
                     }
                 } catch (e) {
-					window.location.href=data.error;
+                    window.location.href = data.onError;
                 }
             }
 
