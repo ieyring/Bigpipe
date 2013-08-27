@@ -1,230 +1,209 @@
-/* Bigpipe - version 2.7
+/* Bigpipe - version 3.0
    Kenny F. 2013
 */
-var BigPipe = function (d) {
+	var BigPipe = function (d) {
 
-    /**
-     * Configure the Pagelet.
-     *
-     * @param {data} contain all paglet data sent from server.
-     * @param {fragment} HTML injected div fragment
-     */
+	    /**
+	     * Configure the Pagelet.
+	     *
+	     * @param {data} contain all paglet data sent from server.
+	     * @param {fragment} HTML injected div fragment
+	     */
 
-    function PageLet(data, fragment) {
+	    function PageLet(data, fragment) {
 
-        // Inject html, and make the paglet visible
+	        var inArray = function (a, b) {
+	            for (var d = a.length; d--;) {
+	                if (a[d] === b) return true;
+	            }
+	            return false;
+	        },
+	            dcl = data.css.length;
 
-        function insertDOM() {
-            console.log("Injected content for pagelet " + data.id);
-            fragment.innerHTML = "string" == typeof data.content ? data.content : "Something went wrong!";
-            fragment.style.display = "block"; // Make the paglet visible
-        };
+	        return {
+	            loadCss: function () {
 
-        function inArray(a, b) {
-            for (var d = a.length; d--;) {
-                if (a[d] === b) return !1;
-            }
-            return !0;
-        }
-        var remainingCss = 0, // Count the CSS files that is left to be injected
-            loadedcss = []; // Holds all loaded css files, and prevent double injection
-        return {
-            loadCss: function () {
-                if (data.css && 0 !== data.css.length) {
-                    console.log("Loading CSS for pagelet " + data.id);
-                    var dcl = remainingCss = data.css.length;
-                    (function Loop(i) {
-                        setTimeout(function () {
-                            inArray(loadedcss, data.css[i - 1]) && (Loader.loadCss(data.css[i - 1], fragment, function () {
-                                --remainingCss;
-                            }), loadedcss.push(data.css[i - 1]))
+	                var loadedcss = []; // Holds all loaded css files, and prevent double injection
 
-                            // If many CSS files in one paglet, we only make the paglet visible after the last CSS file is
-                            // injected						
+	                console.log("Loading CSS for pagelet " + data.id);
+	                (function Loop(i) {
+	                    setTimeout(function () {
 
-                            i == dcl && insertDOM();
+	                        var styleSheet = data.css[i - 1];
 
-                            --i && Loop(i);
+	                        // If the stylesheet are loaded allready, we do nothing
 
-                        }, 10);
-                    })(dcl);
-                } else {
-                    insertDOM();
-                }
-            }
-        }
-    }
-    var injected_js = [], // // Dependencies for the page that is allready injected into the page
-        Loader = function () {
+	                        if (!inArray(loadedcss, styleSheet)) {
 
-            var userAgent = navigator.userAgent.toLowerCase(),
-                Opera = /opera/i.test(navigator.userAgent),
-                IE = /msie/.test(userAgent) && !/opera/.test(userAgent);
+	                            Loader.loadCss(styleSheet, function (success, link) {
 
-            return {
+	                                if (success) {
 
-                // Insert Javascript files into the document
+	                                    // Only push the stylesheet into the "loaded" array if the stylesheet have been loaded
+	                                    // If it fail, it will automaticly try to re-load the stylesheet because it's not in the array
 
-                loadJs: function (url, cb) {
+	                                    loadedcss.push(styleSheet);
 
-                    // Prevent injection of other files then Javascript
+	                                    // After the last stylesheet is loaded, and we have got a positive result feedback, inject paglet data
+	                                    // and make the paglet visible
 
-                    if ("string" == typeof url || "css" == url.split(".").pop()) {
+	                                    loadedcss.length == dcl && (console.log("Injected content for pagelet " + data.id), fragment.innerHTML = data.content, fragment.style.display = "block");
 
-                        var script = d.createElement("script"),
-                            firstScript = document.scripts[0],
-                            loaded = false;
-                        script.async = true; // Required for FireFox 3.6 / Opera async loading.
-                        script.type = "text/javascript";
+	                                } else { // Stylesheet couldn't be loaded, so something went terrible wrong...:
+	                                    console.log("Warning! An error occured during injection of CSS file: " + styleSheet);
+	                                }
+	                            });
+	                        }
+	                        --i && Loop(i);
 
-                        // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
-                        // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
+	                    }, 10);
+	                })(dcl);
 
-                        Opera && this.readyState && "complete" != this.readyState || (script.onload = function () {
-                                loaded || (console.log("loaded " + url), loaded = !0, cb && cb())
-                            }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
-                            script.onreadystatechange = function () {
+	            }
+	        }
+	    }
+	    var injected_js = [], // // Dependencies for the page that is allready injected into the page
+	        Loader = function () {
 
-                                loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, f && script.parentNode && f.removeChild(script))
-                            },
-                            // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
-                            firstScript.parentNode.insertBefore(script, firstScript), script.src = url);
-                    }
-                },
+	            var userAgent = navigator.userAgent.toLowerCase(),
+	                Opera = /opera/i.test(navigator.userAgent);
 
-                // Inject CSS files into the document
+	            return {
 
-                loadCss: function (url, fragment, cb) {
+	                // Insert Javascript files into the document
 
-                    // Prevent injection of other files then CSS
+	                loadJs: function (url, cb) {
 
-                    if ("string" == typeof url || "css" == url.split(".").pop()) {
+	                    // Prevent injection of other files then Javascript
 
-                        var _link = d.createElement("link");
-                        _link.rel = "stylesheet";
-                        _link.type = "text/css";
-                        _link.href = url;
+	                    if (url.match(/js/) && url != "") {
 
-                        IE ? _link.onreadystatechange = function () {
-                            /loaded|complete/.test(_link.readyState) && cb();
-                        } : Opera ? _link.onload = cb : function () {
+	                        var script = d.createElement("script"),
+	                            firstScript = document.scripts[0],
+	                            loaded = false;
+	                        script.async = true; // or false;
+	                        script.type = "text/javascript";
 
-                            // NOTE! "opera" will only be detected by older browsers. Newer version of Opera use the same engine as Chrome
+	                        // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
+	                        // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
 
-                            try {
-                                _link.sheet.cssRule
-                            } catch (a) {
-                                setTimeout(arguments.callee, 20);
+	                        Opera && this.readyState && "complete" != this.readyState || (script.onload = function () {
+	                                loaded || (console.log("loaded " + url), loaded = !0, cb && cb())
+	                            }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
+	                            script.onreadystatechange = function () {
 
-                                return;
-                            }
-                            cb()
-                        }();
-                        (d.getElementsByTagName("head")[0] || d.getElementsByTagName("body")[0]).appendChild(_link);
-                    }
-                }
-            }
-        }();
-    return {
-        OnPageLoad: function (data) {
+	                                loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, f && script.parentNode && f.removeChild(script))
+	                            },
+	                            // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
+	                            firstScript.parentNode.insertBefore(script, firstScript), script.src = url);
+	                    }
+	                },
 
-            try {
+	                // Inject CSS files into the document
 
-                // Hack for IE9 and older IE versions, to avoid the console.log problem
+	                loadCss: function (path, fn, scope) {
+	                    var head = document.getElementsByTagName('head')[0], // reference to document.head for appending/ removing link nodes
+	                        _link = document.createElement('link'); // create the link node
+	                    _link.href = path;
+	                    _link.rel = 'stylesheet';
+	                    _link.type = 'text/css';
 
-                window.console || (console = {
-                    log: function () {}
-                });
+	                    var sheet, cssRules;
+	                    // get the correct properties to check for depending on the browser
+	                    if ('sheet' in _link) {
+	                        sheet = 'sheet';
+	                        cssRules = 'cssRules';
+	                    } else {
+	                        sheet = 'styleSheet';
+	                        cssRules = 'rules';
+	                    }
 
-                // Allways add a css file, else we prevent the code from running
+	                    var interval_id = setInterval(function () { // start checking whether the style sheet has successfully loaded
+	                        try {
+	                            if (_link[sheet] && _link[sheet][cssRules].length) { // SUCCESS! our style sheet has loaded
+	                                clearInterval(interval_id); // clear the counters
+	                                clearTimeout(timeout_id);
+	                                fn.call(scope || window, true, _link); // fire the callback with success == true
+	                            }
+	                        } catch (e) {} finally {}
+	                    }, 10), // how often to check if the stylesheet is loaded
+	                        timeout_id = setTimeout(function () { // start counting down till fail
+	                            clearInterval(interval_id); // clear the counters
+	                            clearTimeout(timeout_id);
+	                            head.removeChild(_link); // since the style sheet didn't load, remove the link node from the DOM
+	                            fn.call(scope || window, false, _link); // fire the callback with success == false
+	                        }, 15000); // how long to wait before failing
 
-                if (data.css) {
+	                    (d.getElementsByTagName("head")[0] || d.getElementsByTagName("body")[0]).appendChild(_link);
+	                    //   head.appendChild( link );  // insert the link node into the DOM and start loading the style sheet
 
-                    if ("string" == typeof data.id && (fragment = d.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
+	                    return _link; // return the link node;
+	                }
+	            }
+	        }();
+	    return {
+	        OnPageLoad: function (data) {
 
-                        // Hide the paglet until css are injected
+	            try {
 
-                        console.log("Hide content for pagelet " + data.id);
-                        fragment.style.display = "none";
+	                // Hack for IE9 and older IE versions, to avoid the console.log problem
 
-                        // Collect the required javascript files
+	                window.console || (console = {
+	                    log: function () {}
+	                });
 
-                        if (0 < data.js.length) {
+	                // Allways add a css file, else we prevent the code from running
 
-                            for (var f = data.js.length; f--;) {
+	                if (data.css) {
 
-                                // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
-                                // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
-                                // into the document.
+	                    if ("string" == typeof data.id && (fragment = d.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
 
-                                var ijl = injected_js.length;
+	                        // Hide the paglet until css are injected
 
-                                if (0 < ijl) {
-                                    for (var e = ijl; e--;) ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
-                                } else {
-                                    injected_js.push(data.js[f]);
-                                }
-                            }
-                        }
+	                        console.log("Hide content for pagelet " + data.id);
+	                        fragment.style.display = "none";
 
-                        (new PageLet(data, fragment)).loadCss();
+	                        // Collect the required javascript files
 
-                        // Inject JS after all pagelets have been visible on the screen
-                        // and the last paglet is completed
-                        // Async loading. The Javascript files will be injected one by one
+	                        if (0 < data.js.length) {
 
-                        data.is_last && (function g(b) {
-                            setTimeout(function () {
-                                console.log("Injecting JS file - " + data.js[b - 1]);
-                                Loader.loadJs(data.js[b - 1]);
-                                --b && g(b);
-                            }, 10)
-                        }(injected_js.length))
-                    }
-                } else {
-                    window.location.href = data.onError;
-                }
-            } catch (e) {
-                window.location.href = data.onError;
-            }
-        }
+	                            for (var f = data.js.length; f--;) {
 
-    }
-}(document);
-DomReady(window, BigPipe);
+	                                // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
+	                                // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
+	                                // into the document.
 
-function DomReady(d, l) {
-    var h = !1,
-        k = !0,
-        a = d.document,
-        f = a.documentElement,
-        e = a.addEventListener ? "addEventListener" : "attachEvent",
-        m = a.addEventListener ? "removeEventListener" : "detachEvent",
-        g = a.addEventListener ? "" : "on",
-        b = function (c) {
-            if ("readystatechange" != c.type || "complete" == a.readyState) {
-                ("load" == c.type ? d : a)[m](g + c.type, b, !1), !h && (h = !0) && l.call(d, c.type || c)
-            }
-        }, c = function () {
-            try {
-                f.doScrolPageLet("left")
-            } catch (a) {
-                setTimeout(c, 50);
-                return
-            }
-            b("poll")
-        };
-    if ("complete" == a.readyState) {
-        l.call(d, "lazy")
-    } else {
-        if (a.createEventObject && f.doScroll) {
-            try {
-                k = !d.frameElement
-            } catch (n) {}
-            k && c()
-        }
-        a[e](g + "DOMContentLoaded", b, !1);
-        a[e](g + "readystatechange", b, !1);
-        d[e](g + "load", b, !1)
-    }
-};
+	                                var ijl = injected_js.length;
+
+	                                if (0 < ijl) {
+	                                    for (var e = ijl; e--;) ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
+	                                } else {
+	                                    injected_js.push(data.js[f]);
+	                                }
+	                            }
+	                        }
+
+	                        (new PageLet(data, fragment)).loadCss();
+
+	                        // Inject JS after all pagelets have been visible on the screen
+	                        // and the last paglet is completed
+	                        // Async loading. The Javascript files will be injected one by one
+
+	                        data.is_last && (function g(b) {
+	                            setTimeout(function () {
+	                                console.log("Injecting JS file - " + data.js[b - 1]);
+	                                Loader.loadJs(data.js[b - 1]);
+	                                --b && g(b);
+	                            }, 10)
+	                        }(injected_js.length))
+	                    }
+	                } else {
+	                    window.location.href = data.onError;
+	                }
+	            } catch (e) {
+	                window.location.href = data.onError;
+	            }
+	        }
+
+	    }
+	}(document);
