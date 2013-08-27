@@ -1,4 +1,4 @@
-/* Bigpipe - version 2.62
+/* Bigpipe - version 2.7
    Kenny F. 2013
 */
 var BigPipe = function (d) {
@@ -21,11 +21,8 @@ var BigPipe = function (d) {
         };
 
         function inArray(a, b) {
-            a = a || [];
             for (var d = a.length; d--;) {
-                if (a[d] === b) {
-                    return !1;
-                }
+                if (a[d] === b) return !1;
             }
             return !0;
         }
@@ -39,7 +36,7 @@ var BigPipe = function (d) {
                     (function Loop(i) {
                         setTimeout(function () {
                             inArray(loadedcss, data.css[i - 1]) && (Loader.loadCss(data.css[i - 1], fragment, function () {
-                                !--remainingCss;
+                                --remainingCss;
                             }), loadedcss.push(data.css[i - 1]))
 
                             // If many CSS files in one paglet, we only make the paglet visible after the last CSS file is
@@ -59,16 +56,10 @@ var BigPipe = function (d) {
     }
     var injected_js = [], // // Dependencies for the page that is allready injected into the page
         Loader = function () {
-            function Browser() {
-                if (!e) {
-                    var a = navigator.userAgent.toLowerCase();
-                    e = (/(chrome)[ \/]([\w.]+)/.exec(a) || /(webkit)[ \/]([\w.]+)/.exec(a) || /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(a) || /(msie) ([\w.]+)/.exec(a) || 0 > a.indexOf("compatible") && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(a) || [])[1];
-                }
-                return e;
-            }
 
-            var f = d.getElementsByTagName("head")[0] || d.getElementsByTagName("body")[0],
-                e; // Just to be sure when it comes to old browsers
+            var userAgent = navigator.userAgent.toLowerCase(),
+                Opera = /opera/i.test(navigator.userAgent),
+                IE = /msie/.test(userAgent) && !/opera/.test(userAgent);
 
             return {
 
@@ -79,23 +70,21 @@ var BigPipe = function (d) {
                     // Prevent injection of other files then Javascript
 
                     if ("string" == typeof url || "css" == url.split(".").pop()) {
-                        url = url || "";
-                    }
-                    if ("" !== url) {
 
                         var script = d.createElement("script"),
-                            firstScript = document.scripts[0];
-                        loaded = false;
+                            firstScript = document.scripts[0],
+                            loaded = false;
                         script.async = true; // Required for FireFox 3.6 / Opera async loading.
                         script.type = "text/javascript";
 
                         // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
                         // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
 
-                        "opera" == Browser() && this.readyState && "complete" != this.readyState || (script.onload = function () {
+                        Opera && this.readyState && "complete" != this.readyState || (script.onload = function () {
                                 loaded || (console.log("loaded " + url), loaded = !0, cb && cb())
                             }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
                             script.onreadystatechange = function () {
+
                                 loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, f && script.parentNode && f.removeChild(script))
                             },
                             // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
@@ -110,18 +99,15 @@ var BigPipe = function (d) {
                     // Prevent injection of other files then CSS
 
                     if ("string" == typeof url || "css" == url.split(".").pop()) {
-                        url = url || "";
-                    }
-                    if ("" !== url) {
 
                         var _link = d.createElement("link");
                         _link.rel = "stylesheet";
                         _link.type = "text/css";
                         _link.href = url;
 
-                        "msie" == Browser() ? _link.onreadystatechange = function () {
+                        IE ? _link.onreadystatechange = function () {
                             /loaded|complete/.test(_link.readyState) && cb();
-                        } : "opera" == Browser() ? _link.onload = cb : function () {
+                        } : Opera ? _link.onload = cb : function () {
 
                             // NOTE! "opera" will only be detected by older browsers. Newer version of Opera use the same engine as Chrome
 
@@ -134,7 +120,7 @@ var BigPipe = function (d) {
                             }
                             cb()
                         }();
-                        f.appendChild(_link);
+                        (d.getElementsByTagName("head")[0] || d.getElementsByTagName("body")[0]).appendChild(_link);
                     }
                 }
             }
@@ -142,75 +128,68 @@ var BigPipe = function (d) {
     return {
         OnPageLoad: function (data) {
 
-            if (data) {
+            try {
 
-                try {
+                // Hack for IE9 and older IE versions, to avoid the console.log problem
 
-                    // Hack for IE9 and older IE versions, to avoid the console.log problem
+                window.console || (console = {
+                    log: function () {}
+                });
 
-                    window.console || (console = {
-                        log: function () {}
-                    });
+                // Allways add a css file, else we prevent the code from running
 
-                    // Allways add a css file, else we prevent the code from running
+                if (data.css) {
 
-                    if (data.css) {
+                    if ("string" == typeof data.id && (fragment = d.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
 
-                        if ("string" == typeof data.id && (fragment = d.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
+                        // Hide the paglet until css are injected
 
-                            // Hide the paglet until css are injected
+                        console.log("Hide content for pagelet " + data.id);
+                        fragment.style.display = "none";
 
-                            console.log("Hide content for pagelet " + data.id);
-                            fragment.style.display = "none";
+                        // Collect the required javascript files
 
-                            // Collect the required javascript files
+                        if (0 < data.js.length) {
 
-                            if (0 < data.js.length) {
+                            for (var f = data.js.length; f--;) {
 
-                                for (var f = data.js.length; f--;) {
+                                // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
+                                // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
+                                // into the document.
 
-                                    // Prevent double injection of Javascript files. If paglet #1 uses page.js and also
-                                    // paglet #2 and paglet #3 uses the same javascript file, there will be only one injected
-                                    // into the document.
+                                var ijl = injected_js.length;
 
-                                    var ijl = injected_js.length;
-
-                                    if (0 < ijl) {
-                                        for (var e = ijl; e--;) {
-                                            ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
-                                        }
-                                    } else {
-                                        injected_js.push(data.js[f]);
-                                    }
+                                if (0 < ijl) {
+                                    for (var e = ijl; e--;) ijl[e] !== data.js[f] && injected_js.push(data.js[f]);
+                                } else {
+                                    injected_js.push(data.js[f]);
                                 }
                             }
-
-                            (new PageLet(data, fragment)).loadCss();
-
-                            // Inject JS after all pagelets have been visible on the screen
-                            // and the last paglet is completed
-                            // Async loading. The Javascript files will be injected one by one
-
-                            data.is_last && (function g(b) {
-                                setTimeout(function () {
-                                    console.log("Injecting JS file - " + data.js[b - 1]);
-                                    Loader.loadJs(data.js[b - 1]);
-                                    --b && g(b);
-                                }, 10)
-                            }(injected_js.length))
                         }
-                    } else {
-                        window.location.href = data.onError;
+
+                        (new PageLet(data, fragment)).loadCss();
+
+                        // Inject JS after all pagelets have been visible on the screen
+                        // and the last paglet is completed
+                        // Async loading. The Javascript files will be injected one by one
+
+                        data.is_last && (function g(b) {
+                            setTimeout(function () {
+                                console.log("Injecting JS file - " + data.js[b - 1]);
+                                Loader.loadJs(data.js[b - 1]);
+                                --b && g(b);
+                            }, 10)
+                        }(injected_js.length))
                     }
-                } catch (e) {
+                } else {
                     window.location.href = data.onError;
                 }
+            } catch (e) {
+                window.location.href = data.onError;
             }
-
         }
 
     }
-
 }(document);
 DomReady(window, BigPipe);
 
