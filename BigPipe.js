@@ -1,4 +1,4 @@
-/* Bigpipe - version 3.0
+/* Bigpipe - version 3.01
    Kenny F. 2013
 */
 	var BigPipe = function (d) {
@@ -78,8 +78,9 @@
 
 	                    if (url.match(/js/) && url != "") {
 
-	                        var script = d.createElement("script"),
-	                            firstScript = document.scripts[0],
+							var head = d.getElementsByTagName('head')[0] || d.getElementsByTagName('body')[0],
+								script = d.createElement("script"),
+	                            firstScript = d.scripts[0],
 	                            loaded = false;
 	                        script.async = true; // or false;
 	                        script.type = "text/javascript";
@@ -92,7 +93,7 @@
 	                            }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
 	                            script.onreadystatechange = function () {
 
-	                                loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, f && script.parentNode && f.removeChild(script))
+	                                loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, head && script.parentNode && head.removeChild(script))
 	                            },
 	                            // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
 	                            firstScript.parentNode.insertBefore(script, firstScript), script.src = url);
@@ -102,8 +103,8 @@
 	                // Inject CSS files into the document
 
 	                loadCss: function (path, fn, scope) {
-	                    var head = document.getElementsByTagName('head')[0], // reference to document.head for appending/ removing link nodes
-	                        _link = document.createElement('link'); // create the link node
+						var head = d.getElementsByTagName('head')[0] || d.getElementsByTagName('body')[0], // Just to be sure when it comes to old browsers
+	                        _link = d.createElement('link'); // create the link node
 	                    _link.href = path;
 	                    _link.rel = 'stylesheet';
 	                    _link.type = 'text/css';
@@ -134,7 +135,7 @@
 	                            fn.call(scope || window, false, _link); // fire the callback with success == false
 	                        }, 15000); // how long to wait before failing
 
-	                    (d.getElementsByTagName("head")[0] || d.getElementsByTagName("body")[0]).appendChild(_link);
+	                    head.appendChild(_link);
 	                    //   head.appendChild( link );  // insert the link node into the DOM and start loading the style sheet
 
 	                    return _link; // return the link node;
