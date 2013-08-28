@@ -1,4 +1,4 @@
-/* Bigpipe - version 3.01
+/* Bigpipe - version 3.1
    Kenny F. 2013
 */
 	var BigPipe = function (d) {
@@ -84,16 +84,17 @@
 	                            loaded = false;
 	                        script.async = true; // or false;
 	                        script.type = "text/javascript";
-
+							script.id = "script" + Math.floor(Math.random() * 911); // Unique ID for each javascript file on each pagelet
+							
 	                        // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
 	                        // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
 
 	                        Opera && this.readyState && "complete" != this.readyState || (script.onload = function () {
-	                                loaded || (console.log("loaded " + url), loaded = !0, cb && cb())
+	                                loaded || (console.log("loaded " + url + ' - id:' + script.id ), loaded = !0, cb && cb())
 	                            }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
 	                            script.onreadystatechange = function () {
 
-	                                loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url), loaded = !0, head && script.parentNode && head.removeChild(script))
+	                                loaded || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url + ' - id:' + script.id), loaded = !0, head && script.parentNode && head.removeChild(script))
 	                            },
 	                            // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
 	                            firstScript.parentNode.insertBefore(script, firstScript), script.src = url);
