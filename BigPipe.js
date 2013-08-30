@@ -1,7 +1,7 @@
 /* Bigpipe - version 3.6
 Kenny F. 2013
 */
-BigPipe = function (doc) {
+var BigPipe = function (doc) {
 
     /**
      * Configure the Pagelet.
