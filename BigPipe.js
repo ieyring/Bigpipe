@@ -1,7 +1,7 @@
-/* Bigpipe - version 3.5
+/* Bigpipe - version 3.6
 Kenny F. 2013
 */
-var BigPipe = function (doc) {
+BigPipe = function (doc) {
 
     /**
      * Configure the Pagelet.
@@ -20,13 +20,13 @@ var BigPipe = function (doc) {
             }
             return !1
         }
-        var b = data.css.length;
+        var b = data.css.length || 0;
         return {
             loadCss: function () {
                 var loadedcss = []; // Holds all loaded css files, and prevent double injection
                 console.log("Loading CSS for pagelet " + data.id);
                 (function h(c) {
-                    setTimeout(function () {
+                    var st = setTimeout(function () {
                         var k = data.css[c - 1];
 
                         // If the stylesheet are loaded allready, we do nothing
@@ -39,20 +39,25 @@ var BigPipe = function (doc) {
                             // After the last stylesheet is loaded, and we have got a positive result feedback, inject paglet data
                             // and make the paglet visible
                         });
+
+                        clearTimeout(st); // clear the counters to prevent memory leak
+						k = null;
                         --c && h(c)
                     }, 20)
                 })(b);
                 console.log("Injected content for pagelet " + data.id);
                 fragment.innerHTML = data.content;
-                c()
+				loadedcss = [];
+                c();
             },
             loadJs: function () { // Insert Javascript files into the document
                 console.log("Loading JS for pagelet " + data.id);
                 var b = doc.getElementsByTagName("script");
                 (function h(c) {
-                    setTimeout(function () {
+                    var st = setTimeout(function () {
                         b[c - 1].src != data.js && (Loader.loadJs(data.js[c - 1], function () {
                             console.log("Injecting JS file - " + queued_js[c - 1])
+							clearTimeout(st);
                         }), --c && h(c))
                     }, 10)
                 })(data.js.length)
@@ -69,12 +74,12 @@ var BigPipe = function (doc) {
                 // Prevent injection of other files then Javascript
 
                 if (url.match(/js/) && "" != url) {
-                    var script = document.createElement("script"),
-                        FirstJS = document.scripts[0],
+                    var script = doc.createElement("script"),
+                        FirstJS = doc.scripts[0],
                         f = !1;
                     script.async = true; // or false;
                     script.type = "text/javascript";
-                    script.id = "script" + Math.floor(911 * Math.random());
+                    script.id = "script" + Math.floor(911);
 
 
                     // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
@@ -93,7 +98,7 @@ var BigPipe = function (doc) {
             // Inject CSS files into the document
 
             loadCss: function (path, cb, scope) {
-                var _link = document.createElement("link");
+                var _link = doc.createElement("link");
                 _link.href = path;
                 _link.rel = "stylesheet";
                 _link.type = "text/css";
@@ -120,8 +125,10 @@ var BigPipe = function (doc) {
     }();
     return {
         OnPageLoad: function (a) {
-            try {
 
+            try {
+				
+var _window
                 // Hack for IE9 and older IE versions, to avoid the console.log problem
 
                 if (window.console || (console = {
