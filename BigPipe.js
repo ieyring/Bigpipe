@@ -128,16 +128,16 @@ BigPipe = function (doc) {
 
             try {
 				
-var _window
+var _window;
                 // Hack for IE9 and older IE versions, to avoid the console.log problem
 
-                if (window.console || (console = {
+                if (_window.console || (console = {
                     log: function () {}
                 }), a.css) { // Allways add a css file, else we prevent the code from running
 
                     // Hide the paglet until css are injected
 
-                    if (console.log("Pagelet arrived " + a.id), "string" == typeof a.id && (fragment = document.getElementById(a.id.toLowerCase()) || ""), "" !== fragment) {
+                    if (console.log("Pagelet arrived " + a.id), "string" == typeof a.id && (fragment = doc.getElementById(a.id.toLowerCase()) || ""), "" !== fragment) {
                         console.log("Hide content for pagelet " + a.id);
                         fragment.style.display = "none";
                         var e = [],
@@ -150,10 +150,10 @@ var _window
                         c.loadCss()
                     }
                 } else {
-                    window.location.href = a.onError
+                    _window.location.href = a.onError
                 }
             } catch (g) {
-                window.location.href = a.onError
+                _window.location.href = a.onError
             }
         }
     }
