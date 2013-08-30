@@ -24,7 +24,6 @@ var BigPipe = function (doc) {
         return {
             loadCss: function () {
                 var loadedcss = []; // Holds all loaded css files, and prevent double injection
-                console.log("Loading CSS for pagelet " + data.id);
                 (function h(c) {
                     var st = setTimeout(function () {
                         var k = data.css[c - 1];
@@ -40,26 +39,23 @@ var BigPipe = function (doc) {
                             // and make the paglet visible
                         });
 
-                        clearTimeout(st); // clear the counters to prevent memory leak
-						k = null;
+                        clearTimeout(st); // clear the timeout to prevent memory leak
+                        k = null;
                         --c && h(c)
-                    }, 20)
+                    }, 15)
                 })(b);
-                console.log("Injected content for pagelet " + data.id);
                 fragment.innerHTML = data.content;
-				loadedcss = [];
+                loadedcss = [];
                 c();
             },
             loadJs: function () { // Insert Javascript files into the document
-                console.log("Loading JS for pagelet " + data.id);
                 var b = doc.getElementsByTagName("script");
                 (function h(c) {
                     var st = setTimeout(function () {
                         b[c - 1].src != data.js && (Loader.loadJs(data.js[c - 1], function () {
-                            console.log("Injecting JS file - " + queued_js[c - 1])
-							clearTimeout(st);
+                            clearTimeout(st);
                         }), --c && h(c))
-                    }, 10)
+                    }, 15)
                 })(data.js.length)
             }
         }
@@ -86,10 +82,10 @@ var BigPipe = function (doc) {
                     // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
 
                     Opera && this.readyState && "complete" != this.readyState || (script.onload = function () {
-                            f || (console.log("loaded " + url + " - id:" + script.id), f = !0, cb && cb())
+                            f || (f = !0, cb && cb())
                         }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
                         script.onreadystatechange = function () {
-                            f || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, console.log("loaded " + url + " - id:" + script.id), f = !0, a && script.parentNode && a.removeChild(script))
+                            f || this.readyState && "loaded" !== this.readyState && "complete" !== this.readyState || (script.onerror = script.onload = script.onreadystatechange = null, f = !0, a && script.parentNode && a.removeChild(script))
                         },
                         // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
                         FirstJS.parentNode.insertBefore(script, FirstJS), script.src = url)
@@ -124,36 +120,33 @@ var BigPipe = function (doc) {
         }
     }();
     return {
-        OnPageLoad: function (a) {
+        OnPageLoad: function (data) {
 
             try {
-				
-var _window;
+
                 // Hack for IE9 and older IE versions, to avoid the console.log problem
 
-                if (_window.console || (console = {
+                if (window.console || (console = {
                     log: function () {}
-                }), a.css) { // Allways add a css file, else we prevent the code from running
+                }), data.css) { // Allways add a css file, else we prevent the code from running
 
                     // Hide the paglet until css are injected
 
-                    if (console.log("Pagelet arrived " + a.id), "string" == typeof a.id && (fragment = doc.getElementById(a.id.toLowerCase()) || ""), "" !== fragment) {
-                        console.log("Hide content for pagelet " + a.id);
+                    if ("string" == typeof data.id && (fragment = doc.getElementById(data.id.toLowerCase()) || ""), "" !== fragment) {
                         fragment.style.display = "none";
                         var e = [],
-                            c = new PagLet(a, fragment, function () {
-                                for (var b = e.length; b--;) {
-                                    0 < a.js.length && e[b].loadJs()
-                                }
+                            pagelet = new PagLet(data, fragment, function () {
+                                var b = e.length;
+                                while (b--) 0 < data.js.length && e[b].loadJs()
                             });
-                        e.push(c);
-                        c.loadCss()
+                        e.push(pagelet);
+                        pagelet.loadCss();
                     }
                 } else {
-                    _window.location.href = a.onError
+                    window.location.href = data.onError
                 }
             } catch (g) {
-                _window.location.href = a.onError
+                window.location.href = data.onError
             }
         }
     }
