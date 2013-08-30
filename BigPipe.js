@@ -3,6 +3,7 @@ Kenny F. 2013
 */
 var BigPipe = function (doc) {
 
+    "use_strict";
     /**
      * Configure the Pagelet.
      *
@@ -115,7 +116,7 @@ var BigPipe = function (doc) {
                         cb.call(scope || window, !1, _link) // fire the callback with success == true
                     }, 1500);
                 a.appendChild(_link); // how long to wait before failing
-                return _link; // return the link node;
+
             }
         }
     }();
@@ -137,7 +138,11 @@ var BigPipe = function (doc) {
                         var e = [],
                             pagelet = new PagLet(data, fragment, function () {
                                 var b = e.length;
-                                while (b--) 0 < data.js.length && e[b].loadJs()
+                                while (b--) {
+                                    0 < data.js.length && e[b].loadJs();
+                                }
+                                b = null;
+
                             });
                         e.push(pagelet);
                         pagelet.loadCss();
