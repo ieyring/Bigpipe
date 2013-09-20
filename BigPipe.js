@@ -15,10 +15,10 @@ var BigPipe = function (doc) {
         function inArray(a, b) {
             for (var c = a.length; c--;) {
                 if (a[c] === b) {
-                    return !0
+                    return !0;
                 }
             }
-            return !1
+            return !1;
         }
         var b = data.css.length || 0;
         return {
@@ -41,7 +41,7 @@ var BigPipe = function (doc) {
 
                         clearTimeout(st); // clear the timeout to prevent memory leak
                         k = null;
-                        --c && h(c)
+                        --c && h(c);
                     }, 15)
                 })(b);
 				loadedcss = [];
@@ -116,7 +116,7 @@ var BigPipe = function (doc) {
                             clearInterval(g); // clear the counters
                             clearTimeout(k);
                             a.removeChild(_link);
-                            cb.call(scope || _win, !1, _link) // fire the callback with success == true
+                            cb.call(scope || _win, !1, _link); // fire the callback with success == true
                         }, 1500);
                     (doc.getElementsByTagName("head")[0] || doc.getElementsByTagName("body")[0]).appendChild(_link); // how long to wait before failing
 
