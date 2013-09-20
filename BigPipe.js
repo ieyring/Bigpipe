@@ -1,4 +1,4 @@
-/* Bigpipe - version 3.7
+/* Bigpipe - version 3.8
 Kenny F. 2013
 */
 var BigPipe = function (doc) {
@@ -127,10 +127,19 @@ var BigPipe = function (doc) {
     return {
         OnPageLoad: function (data) {
 
-            // Hide the paglet until css are injected
+	if (!data) return; 
+	 
+	if ("string" == typeof data.id ) {
 
-            if ("string" == typeof data.id && (fragment = doc.getElementById(data.id) || ""), "" !== fragment) {
-                fragment.style.display = "none";
+		 var fragment = doc.getElementById(data.id);
+		
+	   // Id ID don't exist, we have to create it
+          
+	   fragment || (fragment = doc.createElement("div"), fragment.id = data.id, doc.body.appendChild(fragment));
+
+      // Hide the paglet until css are injected
+
+            fragment.style.display = "none";
                 var e = [],
                     pagelet = new PagLet(data, fragment, function () {
                         if (data.js) {
