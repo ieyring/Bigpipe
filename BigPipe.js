@@ -1,4 +1,4 @@
-/* Bigpipe - version 3.8
+/* Bigpipe - version 3.9
 Kenny F. 2013
 */
 var BigPipe = function (doc) {
@@ -11,7 +11,7 @@ var BigPipe = function (doc) {
      */
 
     function PagLet(data, fragment, func) {
-		
+
         function inArray(a, b) {
             for (var c = a.length; c--;) {
                 if (a[c] === b) {
@@ -23,32 +23,34 @@ var BigPipe = function (doc) {
         var b = data.css.length || 0;
         return {
             loadCss: function () {
-			if(data.css) { // If no CSS, inject the HTML stright away
-                var loadedcss = []; // Holds all loaded css files, and prevent double injection
-                (function h(c) {
-                    var st = setTimeout(function () {
-                        var k = data.css[c - 1];
+                if (data.css) { // If no CSS, inject the HTML stright away
+                    var loadedcss = []; // Holds all loaded css files, and prevent double injection
+                    (function h(c) {
+                        var st = setTimeout(function () {
+                            var k = data.css[c - 1];
 
-                        // If the stylesheet are loaded allready, we do nothing
+                            // If the stylesheet are loaded allready, we do nothing
 
-                        // Only push the stylesheet into the "loaded" array if the stylesheet have been loaded
-                        // If it fail, it will automaticly try to re-load the stylesheet because it's not in the array
+                            // Only push the stylesheet into the "loaded" array if the stylesheet have been loaded
+                            // If it fail, it will automaticly try to re-load the stylesheet because it's not in the array
 
-                        inArray(loadedcss, k) || Loader.loadCss(k, function (a, c) {
-                            a ? (loadedcss.push(k), loadedcss.length == b && (fragment.style.display = "block")) : alert("Error during injection of CSS file: " + k)
-                            // After the last stylesheet is loaded, and we have got a positive result feedback, inject paglet data, and make the paglet visible
-                        });
+                            inArray(loadedcss, k) || Loader.loadCss(k, function (a, c) {
+                                a ? (loadedcss.push(k), loadedcss.length == b && (fragment.style.display = "block")) : alert("Error during injection of CSS file: " + k)
+                                // After the last stylesheet is loaded, and we have got a positive result feedback, inject paglet data, and make the paglet visible
+                            });
 
-                        clearTimeout(st); // clear the timeout to prevent memory leak
-                        k = null;
-                        --c && h(c);
-                    }, 15)
-                })(b);
-				loadedcss = [];
-				} else { fragment.style.display = "block"; } // If no CSS, we only make the pagelet visible and inject the HTML
+                            clearTimeout(st); // clear the timeout to prevent memory leak
+                            k = null;
+                            --c && h(c);
+                        }, 15)
+                    })(b);
+                    loadedcss = [];
+                } else {
+                    fragment.style.display = "block";
+                } // If no CSS, we only make the pagelet visible and inject the HTML
 
                 fragment.innerHTML = data.content;
-                
+
                 func(); // Load the Javascript files
             },
             loadJs: function () { // Insert Javascript files into the document
@@ -72,8 +74,8 @@ var BigPipe = function (doc) {
                     var script = doc.createElement("script"),
                         FirstJS = doc.scripts[0],
                         loaded = !1,
-						_this = this,
-						trs  = _this.readyState;
+                        _this = this,
+                        trs = _this.readyState;
                     script.async = true; // or false;
                     script.type = "text/javascript";
                     script.id = "script" + ~~911;
@@ -97,12 +99,12 @@ var BigPipe = function (doc) {
             loadCss: function (path, cb, scope) {
                 if (path.match(/css/) && "" != path) {
                     var _link = doc.createElement("link"),
-	                    sheet, cssRules,
-    	                _win = window;
+                        sheet, cssRules,
+                        _win = window;
+                    _link.id = 'stylesheet-' + ~~9;
                     _link.href = path;
                     _link.rel = "stylesheet";
                     _link.type = "text/css";
-
 
                     // get the correct properties to check for depending on the browser
 
@@ -113,12 +115,19 @@ var BigPipe = function (doc) {
                         } catch (a) {} finally {}
                     }, 10), // how often to check if the stylesheet is loaded
                         k = setTimeout(function () {
-                            clearInterval(g); // clear the counters
-                            clearTimeout(k);
+                            clearInterval(g); // stop checking it has loaded
+                            clearTimeout(k); // clear the fail timeout (for efficiency)
                             a.removeChild(_link);
                             cb.call(scope || _win, !1, _link); // fire the callback with success == true
                         }, 1500);
-                    (doc.getElementsByTagName("head")[0] || doc.getElementsByTagName("body")[0]).appendChild(_link); // how long to wait before failing
+
+                    var id = setTimeout(function () { // pop out of current stack to prevent browser lock
+                        clearTimeout(id);
+                        id = null;
+                        (doc.getElementsByTagName("head")[0] || doc.getElementsByTagName("body")[0]).appendChild(_link); // insert the link node into the DOM, this will actually start the browser trying to load the style sheet
+                    }, 1);
+
+
 
                 }
             }
@@ -127,19 +136,19 @@ var BigPipe = function (doc) {
     return {
         OnPageLoad: function (data) {
 
-	if (!data) return; 
-	 
-	if ("string" == typeof data.id ) {
+            if (!data) return;
 
-		 var fragment = doc.getElementById(data.id);
-		
-	   // Id ID don't exist, we have to create it
-          
-	   fragment || (fragment = doc.createElement("div"), fragment.id = data.id, doc.body.appendChild(fragment));
+            if ("string" == typeof data.id) {
 
-      // Hide the paglet until css are injected
+                var fragment = doc.getElementById(data.id);
 
-            fragment.style.display = "none";
+                // Id ID don't exist, we have to create it
+
+                fragment || (fragment = doc.createElement("div"), fragment.id = data.id, doc.body.appendChild(fragment));
+
+                // Hide the paglet until css are injected
+
+                fragment.style.display = "none";
                 var e = [],
                     pagelet = new PagLet(data, fragment, function () {
                         if (data.js) {
