@@ -1,0 +1,1 @@
+alert("Hello! I'm a dynamicly loaded JS file. Loaded into this pagelet. You see it's working. Happy now?");

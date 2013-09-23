@@ -1,29 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+	<head>
+	<title>BigPipe</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="robots" content="index,follow" />				
+    <meta http-equiv="cache-control" content="no-store, no-cache, must-revalidate" />
+	<script src="bigpipe.js"></script>
+	</head>
+	<body>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
-"http://www.w3.org/TR/html4/strict.dtd">
-
-
-<h1> BigPipe example</h1>
+	<h1> BigPipe example</h1>
+    
+	<head>
 
 <!-- Include the javascript file -->
 
-<script src="bigpipe.js"></script>
-
-<div id="test"></div>  <!-- Content will show up here -->
+	<div id="test"></div>  <!-- Content will show up here -->
 
 <?php
 
-	// Define your pagelet like this
+	// Autoload classes
 	
-	$data['content'] = 'Just a simple example HTML test';			// HTML to be visible on the screen
-	$data['id'] = 'test';											// ID where HTML to be injected
-	$data['css'] = array();											// Your CSS files forthis pagelet
-	$data['js'] = array();											// Your JS files for this pagelet
-	$data['onError'] = "https://www.google.com";						// Error handler. The script will navigate to the website or page you define here
-																	// if something goes wrong
-	$data['is_last'] = false;										// Set automaticly to TRUE if this is the last paglet 
-	// Output the data to the screen....:
-	
-	echo '<script id="test">BigPipe.OnPageLoad(' . json_encode($data) . ');</script>';
+	function __autoload($class_name) {
+		if (file_exists( $_SERVER['DOCUMENT_ROOT'] . '/' . $class_name . '.php')) :
+			require_once  $_SERVER['DOCUMENT_ROOT'] . '/' . $class_name . '.php';
+		endif;
+	}
+
+
+   $Pagelet  = "";
+
+   // Define your pagelet like this  
+   
+   $Pagelet = new Pagelet("test", "", 0);					// HTML to be visible on the screen
+   $Pagelet->add_content('Just a simple example HTML test');
+   $Pagelet->add_css("test.css");									// Your CSS files for this pagelet
+   $Pagelet->add_javascript("test.js");								// Your JS files for this pagelet
+
+	echo View::render();  // This has to be called in the end after all pagelets have been defined. You can define multiple pagelets like I did above. 
+						  // But DO NOT call this before all pagelets are defined else only the first pagelet you define will be visible on the screen.
 
 ?>
+</body></html><!--html end tag from bigpipe renderer-->
