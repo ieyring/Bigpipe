@@ -1,4 +1,4 @@
-Bigpipe v.3.8
+Bigpipe v.4.0
 ==============
 
 Fast, solid and lightweight implementation of Facebooks Bigpipe. It support all browsers - included older versions.
