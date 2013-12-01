@@ -1,7 +1,8 @@
-/* Bigpipe - version 3.9
-Kenny F. 2013
-*/
-var BigPipe = function (doc) {
+/* Bigpipe - version 4.0 Kenny F. 2013 - 2014 */
+
+var BigPipe = {};
+
+BigPipe = function (doc) {
 
     /**
      * Configure the Pagelet.
@@ -34,15 +35,16 @@ var BigPipe = function (doc) {
                             // Only push the stylesheet into the "loaded" array if the stylesheet have been loaded
                             // If it fail, it will automaticly try to re-load the stylesheet because it's not in the array
 
-                            inArray(loadedcss, k) || Loader.loadCss(k, function (a, c) {
-                                a ? (loadedcss.push(k), loadedcss.length == b && (fragment.style.display = "block")) : alert("Error during injection of CSS file: " + k)
+                            inArray(loadedcss, k) || Loader.loadCss(k, function (a) {
+								
+                            a ? (loadedcss.push(k), loadedcss.length == b && (func(), fragment.style.display = "block")) : alert("Error during injection of CSS file: " + k);
                                 // After the last stylesheet is loaded, and we have got a positive result feedback, inject paglet data, and make the paglet visible
                             });
 
                             clearTimeout(st); // clear the timeout to prevent memory leak
                             k = null;
                             --c && h(c);
-                        }, 15)
+                        }, 15);
                     })(b);
                     loadedcss = [];
                 } else {
@@ -58,8 +60,8 @@ var BigPipe = function (doc) {
                 (function h(c) {
                     var st = setTimeout(function () {
                         clearTimeout(st); // clear the counters	
-                        b[c - 1].src != data.js && (Loader.loadJs(data.js[c - 1]), --c && h(c))
-                    }, 15)
+                        b[c - 1].src != data.js && (Loader.loadJs(data.js[c - 1]), --c && h(c));
+                    }, 15);
                 })(data.js.length);
             }
         };
@@ -67,19 +69,18 @@ var BigPipe = function (doc) {
     var Loader = function () {
         return {
             loadJs: function (url, cb) {
-
                 // Prevent injection of other files then Javascript
 
-                if (url.match(/js/) && "" != url) {
+                if (url.match(/js/) && "" !== url) {
                     var script = doc.createElement("script"),
-                        FirstJS = doc.scripts[0],
+						scripts = doc.getElementsByTagName('script'),
+                        FirstJS = scripts[0],
                         loaded = !1,
                         _this = this,
                         trs = _this.readyState;
+
                     script.async = true; // or false;
                     script.type = "text/javascript";
-                    script.id = "script" + ~~911;
-
 
                     // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
                     // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
@@ -88,20 +89,22 @@ var BigPipe = function (doc) {
                             loaded || (loaded = !0, cb && cb());
                         }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
                         script.onreadystatechange = function () {
-                            loaded || trs && "loaded" !== trs && "complete" !== trs || (script.onerror = script.onload = script.onreadystatechange = null, loaded = !0, a && script.parentNode && a.removeChild(script))
+                            loaded || trs && "loaded" !== trs && "complete" !== trs || (script.onerror = script.onload = script.onreadystatechange = null, loaded = !0, doc && script.parentNode && doc.removeChild(script));
                         },
                         // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
-                        FirstJS.parentNode.insertBefore(script, FirstJS), script.src = url)
+                        FirstJS.parentNode.insertBefore(script, FirstJS), script.src = url);
                 }
             },
             // Inject CSS files into the document
 
             loadCss: function (path, cb, scope) {
-                if (path.match(/css/) && "" != path) {
+				
+			//	alert(path);
+				
+                if (path.match(/css/) && "" !== path) {
                     var _link = doc.createElement("link"),
                         sheet, cssRules,
                         _win = window;
-                    _link.id = 'stylesheet-' + ~~9;
                     _link.href = path;
                     _link.rel = "stylesheet";
                     _link.type = "text/css";
@@ -111,13 +114,13 @@ var BigPipe = function (doc) {
                     "sheet" in _link ? (sheet = "sheet", cssRules = "cssRules") : (sheet = "styleSheet", cssRules = "rules");
                     var g = setInterval(function () { // start checking whether the style sheet has successfully loaded
                         try {
-                            _link[sheet] && _link[sheet][cssRules].length && (clearInterval(g), clearTimeout(k), cb.call(scope || _win, !0, _link))
+                            _link[sheet] && _link[sheet][cssRules].length && (clearInterval(g), clearTimeout(k), cb.call(scope || _win, !0, _link));
                         } catch (a) {} finally {}
                     }, 10), // how often to check if the stylesheet is loaded
                         k = setTimeout(function () {
                             clearInterval(g); // stop checking it has loaded
-                            clearTimeout(k); // clear the fail timeout (for efficiency)
-                            a.removeChild(_link);
+                            clearTimeout(k);  // clear the fail timeout (for efficiency)
+                            doc.removeChild(_link);
                             cb.call(scope || _win, !1, _link); // fire the callback with success == true
                         }, 1500);
 
@@ -131,12 +134,10 @@ var BigPipe = function (doc) {
 
                 }
             }
-        }
+        };
     }();
     return {
         OnPageLoad: function (data) {
-
-            if (!data) return;
 
             if ("string" == typeof data.id) {
 
@@ -149,11 +150,12 @@ var BigPipe = function (doc) {
                 // Hide the paglet until css are injected
 
                 fragment.style.display = "none";
+
                 var e = [],
                     pagelet = new PagLet(data, fragment, function () {
                         if (data.js) {
                             for (var b = e.length; b--;) {
-                                e[b].loadJs();
+                               e[b].loadJs();
                             }
                         }
                     });
@@ -164,5 +166,5 @@ var BigPipe = function (doc) {
                 (doc.location || window.location).href = data.onError;
             }
         }
-    }
+    };
 }(document);
