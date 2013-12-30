@@ -4,7 +4,9 @@ Bigpipe v.4.0
 Fast, solid and lightweight implementation of Facebooks Bigpipe. It support all browsers - included older versions.
 Internet Explorer 6 & 7 included.
 
-It works right out of the "box" and shouldn't give you any trouble.
+v.4.0 is build with the buddy_ library for better cross-browser suppurt, and this has to be included before BigPipe will work.
+
+BigPipe works right out of the "box" and shouldn't give you any trouble.
 
 In v.2.6, I added a error fallback handler in the script, so if something goes wrong, you can redirect the users 
 to whatever website or page you want.
