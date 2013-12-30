@@ -13,15 +13,7 @@ BigPipe = function (doc) {
 
     function PagLet(data, fragment, func) {
 
-        function inArray(a, b) {
-            for (var c = a.length; c--;) {
-                if (a[c] === b) {
-                    return !0;
-                }
-            }
-            return !1;
-        }
-        var b = data.css.length || 0;
+        var b = $size(data.css) || 0;
         return {
             loadCss: function () {
                 if (data.css) { // If no CSS, inject the HTML stright away
@@ -35,9 +27,9 @@ BigPipe = function (doc) {
                             // Only push the stylesheet into the "loaded" array if the stylesheet have been loaded
                             // If it fail, it will automaticly try to re-load the stylesheet because it's not in the array
 
-                            inArray(loadedcss, k) || Loader.loadCss(k, function (a) {
+                            $inArray(loadedcss, k) || Loader.loadCss(k, function (a) {
 								
-                            a ? (loadedcss.push(k), loadedcss.length == b && (func(), fragment.style.display = "block")) : alert("Error during injection of CSS file: " + k);
+                            a ? (loadedcss.push(k), $size(loadedcss) == b && (func(), fragment.style.display = "block")) : alert("Error during injection of CSS file: " + k);
                                 // After the last stylesheet is loaded, and we have got a positive result feedback, inject paglet data, and make the paglet visible
                             });
 
@@ -60,41 +52,15 @@ BigPipe = function (doc) {
                 (function h(c) {
                     var st = setTimeout(function () {
                         clearTimeout(st); // clear the counters	
-                        b[c - 1].src != data.js && (Loader.loadJs(data.js[c - 1]), --c && h(c));
+                        b[c - 1].src != data.js && ($injectJS(data.js[c - 1]), --c && h(c));
                     }, 15);
-                })(data.js.length);
+                })($size(data.js));
             }
         };
     };
     var Loader = function () {
         return {
-            loadJs: function (url, cb) {
-                // Prevent injection of other files then Javascript
-
-                if (url.match(/js/) && "" !== url) {
-                    var script = doc.createElement("script"),
-						scripts = doc.getElementsByTagName('script'),
-                        FirstJS = scripts[0],
-                        loaded = !1,
-                        _this = this,
-                        trs = _this.readyState;
-
-                    script.async = true; // or false;
-                    script.type = "text/javascript";
-
-                    // Hack for older Opera browsers. Some of them fires load event multiple times, even when the DOM is not ready yet.
-                    // This have no impact on the newest Opera browsers, because they share the same engine as Chrome.
-
-                    /opera/i.test(navigator.userAgent) && trs && "complete" != trs || (script.onload = function () {
-                            loaded || (loaded = !0, cb && cb());
-                        }, // Fall-back for older IE versions ( IE 6 & 7), they do not support the onload event on the script tag  
-                        script.onreadystatechange = function () {
-                            loaded || trs && "loaded" !== trs && "complete" !== trs || (script.onerror = script.onload = script.onreadystatechange = null, loaded = !0, doc && script.parentNode && doc.removeChild(script));
-                        },
-                        // Because of a bug in IE8, the src needs to be set after the element has been added to the document.
-                        FirstJS.parentNode.insertBefore(script, FirstJS), script.src = url);
-                }
-            },
+          
             // Inject CSS files into the document
 
             loadCss: function (path, cb, scope) {
@@ -139,9 +105,11 @@ BigPipe = function (doc) {
     return {
         OnPageLoad: function (data) {
 
-            if ("string" == typeof data.id) {
+            if (!data) return false;
 
-                var fragment = doc.getElementById(data.id);
+            if ($isString(data.id)) {
+
+                var fragment = $gel('#' + data.id);
 
                 // Id ID don't exist, we have to create it
 
@@ -149,13 +117,13 @@ BigPipe = function (doc) {
 
                 // Hide the paglet until css are injected
 
-                fragment.style.display = "none";
+                $hide(fragment);
 
                 var e = [],
                     pagelet = new PagLet(data, fragment, function () {
                         if (data.js) {
-                            for (var b = e.length; b--;) {
-                               e[b].loadJs();
+                            for (var b = $size(e); b--;) {
+                                e[b].loadJs();
                             }
                         }
                     });
@@ -163,8 +131,8 @@ BigPipe = function (doc) {
                 pagelet.loadCss();
 
             } else {
-                (doc.location || window.location).href = data.onError;
+                (doc.location || _win.location).href = data.onError;
             }
         }
-    };
-}(document);
+    }
+}(document, window);
